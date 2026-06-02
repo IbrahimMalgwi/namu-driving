@@ -1,32 +1,38 @@
-// src/pages/Home.jsx (Student Dashboard)
+// src/page/Home
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { getCurrentUserProfile } from "../services/authService";
+import { getNextLesson } from "../services/bookingService";
+import { getLatestAnnouncement } from "../services/announcementService";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
     const [userName, setUserName] = useState("");
     const [nextLesson, setNextLesson] = useState(null);
+    const [announcement, setAnnouncement] = useState({ title: "", content: "" });
     const navigate = useNavigate();
 
     useEffect(() => {
-        async function load() {
-            const profile = await getCurrentUserProfile();
-            if (profile) setUserName(profile.full_name?.split(" ")[0] || "Student");
-            // TODO: fetch next lesson from bookings table
-            setNextLesson({
-                date: "Friday, 24 May 2024",
-                time: "10:00 AM – 11:00 AM",
-                instructor: "Mr. Tunde",
-            });
+        async function loadDashboard() {
+            try {
+                const profile = await getCurrentUserProfile();
+                if (profile) setUserName(profile.full_name?.split(" ")[0] || "Student");
+
+                const lesson = await getNextLesson();
+                setNextLesson(lesson);
+
+                const ann = await getLatestAnnouncement();
+                setAnnouncement(ann);
+            } catch (err) {
+                console.error(err);
+            }
         }
-        load();
+        loadDashboard();
     }, []);
 
     return (
         <Layout showBottomNav={true}>
             <div className="space-y-5">
-                {/* Welcome row */}
                 <div>
                     <h2 className="text-2xl font-bold text-primary">Welcome, {userName}!</h2>
                 </div>
@@ -34,12 +40,18 @@ export default function Home() {
                 {/* Next Lesson Card */}
                 <div className="bg-white rounded-2xl shadow p-5 border-l-8 border-secondary">
                     <p className="text-gray-500 text-sm">Next Lesson</p>
-                    <p className="font-semibold text-lg">{nextLesson?.date}</p>
-                    <p className="text-gray-700">{nextLesson?.time}</p>
-                    <p className="text-secondary font-medium">Instructor: {nextLesson?.instructor}</p>
+                    {nextLesson ? (
+                        <>
+                            <p className="font-semibold text-lg">{nextLesson.date}</p>
+                            <p className="text-gray-700">{nextLesson.time}</p>
+                            <p className="text-secondary font-medium">Instructor: {nextLesson.instructor}</p>
+                        </>
+                    ) : (
+                        <p className="text-gray-500">No upcoming lessons. <button onClick={() => navigate("/book-lesson")} className="text-primary">Book now</button></p>
+                    )}
                 </div>
 
-                {/* Quick action buttons (4 cards) */}
+                {/* Quick Actions */}
                 <div className="grid grid-cols-2 gap-4">
                     <ActionCard title="Book Lesson" icon="📘" onClick={() => navigate("/book-lesson")} />
                     <ActionCard title="Learn Driving" icon="🚗" onClick={() => navigate("/learn")} />
@@ -47,10 +59,10 @@ export default function Home() {
                     <ActionCard title="Messages" icon="💬" onClick={() => alert("Messages coming soon")} />
                 </div>
 
-                {/* Recent Announcement */}
+                {/* Announcement */}
                 <div className="bg-primary/10 rounded-2xl p-4">
-                    <p className="font-semibold text-primary">📢 Recent Announcement</p>
-                    <p className="text-gray-700 text-sm">Road sign of the week – Check it out and test your knowledge.</p>
+                    <p className="font-semibold text-primary">📢 {announcement.title}</p>
+                    <p className="text-gray-700 text-sm">{announcement.content}</p>
                 </div>
             </div>
         </Layout>
