@@ -8,6 +8,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import BookLesson from "./pages/BookLesson";
+import Learn from "./pages/Learn";
+
 export default function App() {
     return (
         <BrowserRouter>
@@ -43,6 +46,17 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
+
+                <Route path="/book-lesson" element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                        <BookLesson />
+                    </ProtectedRoute>
+                } />
+                <Route path="/learn" element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                        <Learn />
+                    </ProtectedRoute>
+                } />
             </Routes>
         </BrowserRouter>
     );

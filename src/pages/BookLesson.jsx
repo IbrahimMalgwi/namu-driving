@@ -1,4 +1,5 @@
 //src/pages/BookLesson.jsx
+import { supabase } from "../lib/supabase";
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { getInstructors, getAvailableTimeSlots, createBooking } from "../services/bookingService";
