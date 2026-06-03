@@ -119,3 +119,139 @@ export async function getNextLesson() {
         instructor: booking.instructor?.full_name || "TBA",
     };
 }
+
+// Get all bookings for instructors/admins
+export async function getAllBookings() {
+    const { data, error } = await supabase
+        .from("bookings")
+        .select(`
+            id,
+            booking_date,
+            start_time,
+            status,
+            pickup_address,
+            package_type,
+            student:student_id (
+                id,
+                full_name,
+                phone
+            ),
+            instructor:instructor_id (
+                id,
+                full_name,
+                phone
+            )
+        `)
+        .order("booking_date", { ascending: true })
+        .order("start_time", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}
+
+// Get bookings for a specific instructor
+export async function getInstructorBookings(instructorId) {
+    const { data, error } = await supabase
+        .from("bookings")
+        .select(`
+            id,
+            booking_date,
+            start_time,
+            status,
+            pickup_address,
+            package_type,
+            student:student_id (
+                id,
+                full_name,
+                phone
+            ),
+            instructor:instructor_id (
+                id,
+                full_name
+            )
+        `)
+        .eq("instructor_id", instructorId)
+        .order("booking_date", { ascending: true })
+        .order("start_time", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}
+
+// Update booking status
+export async function updateBookingStatus(bookingId, newStatus) {
+    const { data, error } = await supabase
+        .from("bookings")
+        .update({
+            status: newStatus,
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", bookingId)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+// Delete/cancel booking
+export async function cancelBooking(bookingId) {
+    return updateBookingStatus(bookingId, "cancelled");
+}
+
+// Get today's bookings
+export async function getTodayBookings() {
+    const today = new Date().toISOString().split("T")[0];
+    const { data, error } = await supabase
+        .from("bookings")
+        .select(`
+            id,
+            booking_date,
+            start_time,
+            status,
+            pickup_address,
+            student:student_id (
+                full_name,
+                phone
+            ),
+            instructor:instructor_id (
+                full_name
+            )
+        `)
+        .eq("booking_date", today)
+        .in("status", ["confirmed", "pending"])
+        .order("start_time", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}
+
+// Get bookings in date range
+export async function getBookingsByDateRange(startDate, endDate) {
+    const { data, error } = await supabase
+        .from("bookings")
+        .select(`
+            id,
+            booking_date,
+            start_time,
+            status,
+            pickup_address,
+            package_type,
+            student:student_id (
+                id,
+                full_name,
+                phone
+            ),
+            instructor:instructor_id (
+                id,
+                full_name
+            )
+        `)
+        .gte("booking_date", startDate)
+        .lte("booking_date", endDate)
+        .order("booking_date", { ascending: true })
+        .order("start_time", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}

@@ -1,11 +1,13 @@
 // tailwind.config.js
-export default {
-  content: ["./index.html", "./src/**/*.{js,jsx}"],
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
       colors: {
-        primary: "#0D47A1",    // deep blue from design
-        secondary: "#E53935",  // red from design
+        primary: "#0D47A1",
+        secondary: "#E53935",
         accent: "#1E90FF",
         success: "#2ECC71",
         muted: "#F8F9FA",
@@ -14,4 +16,4 @@ export default {
     },
   },
   plugins: [],
-};
+}

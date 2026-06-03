@@ -10,19 +10,24 @@ export async function getMyStudentRecord() {
     if (userError) throw userError;
     if (!user) throw new Error("Not authenticated.");
 
+    // Use maybeSingle() – returns null if no row, instead of error
     const { data, error } = await supabase
         .from("students")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
     if (error) throw error;
-
-    return data;
+    return data; // could be null
 }
 
 export async function getMyProgress() {
     const student = await getMyStudentRecord();
+
+    // If no student record exists, return empty array
+    if (!student) {
+        return [];
+    }
 
     const { data, error } = await supabase
         .from("progress")
@@ -31,8 +36,7 @@ export async function getMyProgress() {
         .order("skill_name", { ascending: true });
 
     if (error) throw error;
-
-    return data;
+    return data || [];
 }
 
 export async function updateProgress(progressId, isCompleted) {
@@ -45,9 +49,8 @@ export async function updateProgress(progressId, isCompleted) {
         })
         .eq("id", progressId)
         .select()
-        .single();
+        .maybeSingle(); // Use maybeSingle() in case progress is missing (shouldn't happen)
 
     if (error) throw error;
-
     return data;
 }
