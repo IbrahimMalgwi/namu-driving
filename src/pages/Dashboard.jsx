@@ -4,14 +4,31 @@ import Layout from "../components/Layout";
 import { supabase } from "../lib/supabase";
 import { getAllBookings, updateBookingStatus } from "../services/bookingService";
 import PickupMap from "../components/PickupMap";
+import {
+    contentTypes,
+    createLearningContent,
+    getLearningContentForStaff,
+    groupLearningContent,
+    packageOptions,
+} from "../services/learnService";
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("schedule");
     const [bookings, setBookings] = useState([]);
     const [students, setStudents] = useState([]);
+    const [allStudents, setAllStudents] = useState([]);
     const [documents, setDocuments] = useState([]);
+    const [learningGroups, setLearningGroups] = useState([]);
     const [loading, setLoading] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
+    const [learningFile, setLearningFile] = useState(null);
+    const [learningForm, setLearningForm] = useState({
+        type: "lesson",
+        title: "",
+        body: "",
+        packageType: "all",
+        studentId: "",
+    });
     const [message, setMessage] = useState("");
 
     useEffect(() => {
@@ -25,13 +42,34 @@ export default function Dashboard() {
             const bookingsData = await getAllBookings();
             setBookings(bookingsData || []);
 
-            // Load students with special training
+            // Load students and join profile details manually to avoid depending on DB relationship names.
             const { data: studentsData } = await supabase
                 .from("students")
-                .select("id, full_name, phone, training_package")
-                .eq("training_package", "special");
+                .select("id, user_id, training_package");
 
-            setStudents(studentsData || []);
+            const userIds = (studentsData || []).map((student) => student.user_id).filter(Boolean);
+            let profilesById = {};
+
+            if (userIds.length > 0) {
+                const { data: profilesData } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, phone")
+                    .in("id", userIds);
+
+                profilesById = (profilesData || []).reduce((acc, profile) => {
+                    acc[profile.id] = profile;
+                    return acc;
+                }, {});
+            }
+
+            const hydratedStudents = (studentsData || []).map((student) => ({
+                ...student,
+                full_name: profilesById[student.user_id]?.full_name || "Unnamed Student",
+                phone: profilesById[student.user_id]?.phone || "",
+            }));
+
+            setAllStudents(hydratedStudents);
+            setStudents(hydratedStudents.filter((student) => student.training_package === "special"));
 
             // Load documents
             const { data: docsData } = await supabase
@@ -40,6 +78,9 @@ export default function Dashboard() {
                 .order("created_at", { ascending: false });
 
             setDocuments(docsData || []);
+
+            const learningData = await getLearningContentForStaff();
+            setLearningGroups(groupLearningContent(learningData));
         } catch (err) {
             console.error("Error loading data:", err);
         } finally {
@@ -89,6 +130,39 @@ export default function Dashboard() {
         }
     }
 
+    async function handleCreateLearningContent(e) {
+        e.preventDefault();
+        setLoading(true);
+        setMessage("");
+
+        try {
+            await createLearningContent({
+                type: learningForm.type,
+                title: learningForm.title,
+                body: learningForm.body,
+                packageType: learningForm.packageType,
+                studentId: learningForm.studentId,
+                file: learningFile,
+            });
+
+            setMessage("Learning content added successfully!");
+            setLearningForm({
+                type: "lesson",
+                title: "",
+                body: "",
+                packageType: "all",
+                studentId: "",
+            });
+            setLearningFile(null);
+            setTimeout(() => setMessage(""), 3000);
+            loadData();
+        } catch (err) {
+            setMessage(`Error: ${err.message || "Unable to add learning content"}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     async function handleUpdateBookingStatus(bookingId, newStatus) {
         try {
             await updateBookingStatus(bookingId, newStatus);
@@ -121,6 +195,7 @@ export default function Dashboard() {
                     {[
                         { id: "schedule", label: "📅 Schedule", icon: "📅" },
                         { id: "maps", label: "🗺️ Pick-up Locations", icon: "🗺️" },
+                        { id: "learning", label: "📚 Learning Content", icon: "📚" },
                         { id: "documents", label: "📄 Documents", icon: "📄" }
                     ].map(tab => (
                         <button
@@ -235,6 +310,134 @@ export default function Dashboard() {
 
                         {/* Map Placeholder */}
                         <PickupMap students={students} bookings={bookings} />
+                    </div>
+                )}
+
+                {activeTab === "learning" && (
+                    <div className="space-y-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-primary">📚 Learning Content</h2>
+                            <p className="text-gray-600 text-sm mt-1">
+                                Add lessons, road signs, driving tips, and car maintenance content for all students, a package, or one student.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleCreateLearningContent} className="bg-white rounded-2xl shadow p-6 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Content Type</label>
+                                    <select
+                                        value={learningForm.type}
+                                        onChange={(e) => setLearningForm({ ...learningForm, type: e.target.value })}
+                                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
+                                    >
+                                        {contentTypes.map((type) => (
+                                            <option key={type.value} value={type.value}>
+                                                {type.icon} {type.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Target Package</label>
+                                    <select
+                                        value={learningForm.packageType}
+                                        onChange={(e) => setLearningForm({ ...learningForm, packageType: e.target.value })}
+                                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
+                                    >
+                                        {packageOptions.map((pkg) => (
+                                            <option key={pkg.value} value={pkg.value}>
+                                                {pkg.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Specific Student (optional)</label>
+                                <select
+                                    value={learningForm.studentId}
+                                    onChange={(e) => setLearningForm({ ...learningForm, studentId: e.target.value })}
+                                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
+                                >
+                                    <option value="">All matching students</option>
+                                    {allStudents.map((student) => (
+                                        <option key={student.id} value={student.id}>
+                                            {student.full_name} ({student.training_package?.replaceAll("_", " ") || "no package"})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <input
+                                required
+                                placeholder="Title"
+                                value={learningForm.title}
+                                onChange={(e) => setLearningForm({ ...learningForm, title: e.target.value })}
+                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
+                            />
+
+                            <textarea
+                                required
+                                placeholder="Write the lesson, tip, sign meaning, or maintenance guidance..."
+                                value={learningForm.body}
+                                onChange={(e) => setLearningForm({ ...learningForm, body: e.target.value })}
+                                rows={5}
+                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
+                            />
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Upload Image/File (optional)</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => setLearningFile(e.target.files?.[0] || null)}
+                                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Useful for road signs, maintenance photos, or lesson documents.
+                                </p>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-secondary hover:bg-red-700 text-white py-3 rounded-xl font-bold transition disabled:opacity-50"
+                            >
+                                {loading ? "Saving..." : "Add Learning Content"}
+                            </button>
+                        </form>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {learningGroups.map((group) => (
+                                <div key={group.value} className="bg-white rounded-2xl shadow p-5">
+                                    <h3 className="font-bold text-lg text-primary mb-3">
+                                        {group.icon} {group.label}
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {group.items.length === 0 ? (
+                                            <p className="text-gray-500 text-sm">No content yet.</p>
+                                        ) : (
+                                            group.items.slice(0, 5).map((item) => (
+                                                <div key={item.id} className="border border-gray-100 rounded-xl p-3">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <p className="font-bold text-gray-800">{item.title}</p>
+                                                        <span className={`text-xs font-bold rounded-full px-2 py-1 ${
+                                                            item.is_fixed ? "bg-blue-50 text-primary" : "bg-green-50 text-success"
+                                                        }`}>
+                                                            {item.is_fixed ? "Fixed" : "Added"}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">{item.body}</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 

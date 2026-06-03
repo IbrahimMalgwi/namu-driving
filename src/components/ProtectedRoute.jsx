@@ -7,7 +7,6 @@ export default function ProtectedRoute({
                                            children,
                                            allowedRoles = [],
                                        }) {
-    const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [denied, setDenied] = useState(false);
 
@@ -29,7 +28,6 @@ export default function ProtectedRoute({
                     return;
                 }
 
-                setProfile(userProfile);
             } catch {
                 setDenied(true);
             } finally {
