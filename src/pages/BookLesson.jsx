@@ -1,9 +1,9 @@
 //src/pages/BookLesson.jsx
-import { supabase } from "../lib/supabase";
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { getInstructors, getAvailableTimeSlots, createBooking } from "../services/bookingService";
 import { getCurrentUserProfile } from "../services/authService";
+import { supabase } from "../lib/supabase";   // ✅ added
 
 export default function BookLesson() {
     const [step, setStep] = useState(1);
@@ -34,13 +34,12 @@ export default function BookLesson() {
     async function loadStudentPackage() {
         const profile = await getCurrentUserProfile();
         if (profile && profile.role === "student") {
-            // fetch student's training package from students table
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from("students")
                 .select("training_package")
                 .eq("user_id", profile.id)
                 .single();
-            if (data) setStudentPackage(data.training_package);
+            if (!error && data) setStudentPackage(data.training_package);
         }
     }
 
@@ -81,11 +80,11 @@ export default function BookLesson() {
             });
             setMessage("Booking request sent! Awaiting confirmation.");
             // reset form
-            setStep(1);
             setSelectedDate("");
             setSelectedTime("");
             setSelectedInstructor("");
             setPickupAddress("");
+            setStep(1);
         } catch (err) {
             setMessage(err.message || "Booking failed");
         }
@@ -109,7 +108,7 @@ export default function BookLesson() {
                     />
                 </div>
 
-                {/* Step 2: Select Time (only if date selected) */}
+                {/* Step 2: Select Time */}
                 {selectedDate && (
                     <div className="bg-white p-5 rounded-2xl shadow">
                         <label className="font-semibold block mb-2">2. Select Time</label>
@@ -171,7 +170,7 @@ export default function BookLesson() {
                 </div>
 
                 {message && (
-                    <p className={`text-center ${message.includes("success") ? "text-green-600" : "text-red-600"}`}>
+                    <p className={`text-center ${message.includes("sent") ? "text-green-600" : "text-red-600"}`}>
                         {message}
                     </p>
                 )}
