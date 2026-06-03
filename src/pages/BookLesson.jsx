@@ -17,6 +17,21 @@ export default function BookLesson() {
     const [message, setMessage] = useState("");
     const [studentPackage, setStudentPackage] = useState("regular");
 
+    function getErrorMessage(error, fallback) {
+        if (!error) return fallback;
+        if (typeof error === "string") return error;
+        if (typeof error.message === "string") return error.message;
+        if (typeof error.error_description === "string") return error.error_description;
+        if (typeof error.details === "string") return error.details;
+
+        try {
+            const serialized = JSON.stringify(error);
+            return serialized && serialized !== "{}" ? serialized : fallback;
+        } catch {
+            return fallback;
+        }
+    }
+
     useEffect(() => {
         loadInstructors();
         loadStudentPackage();
@@ -32,14 +47,19 @@ export default function BookLesson() {
     }
 
     async function loadStudentPackage() {
-        const profile = await getCurrentUserProfile();
-        if (profile && profile.role === "student") {
-            const { data, error } = await supabase
-                .from("students")
-                .select("training_package")
-                .eq("user_id", profile.id)
-                .single();
-            if (!error && data) setStudentPackage(data.training_package);
+        try {
+            const profile = await getCurrentUserProfile();
+            if (profile && profile.role === "student") {
+                const { data, error } = await supabase
+                    .from("students")
+                    .select("training_package")
+                    .eq("user_id", profile.id)
+                    .single();
+                if (error) throw error;
+                if (data) setStudentPackage(data.training_package);
+            }
+        } catch (err) {
+            console.error("Unable to load student package:", err);
         }
     }
 
@@ -47,23 +67,34 @@ export default function BookLesson() {
         const date = e.target.value;
         setSelectedDate(date);
         setSelectedTime("");
+        setSelectedInstructor("");
+        setPickupAddress("");
+        setStep(date ? 2 : 1);
+        setMessage("");
         if (date) {
-            setLoading(true);
-            const slots = await getAvailableTimeSlots(date, selectedInstructor);
-            setTimeSlots(slots);
-            setLoading(false);
+            try {
+                setLoading(true);
+                const slots = await getAvailableTimeSlots(date);
+                setTimeSlots(slots);
+            } catch (err) {
+                console.error("Unable to load available time slots:", err);
+                setTimeSlots([]);
+                setMessage("✗ " + getErrorMessage(err, "Unable to load available time slots."));
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            setTimeSlots([]);
         }
     }
 
     async function handleInstructorChange(e) {
         const instructorId = e.target.value;
         setSelectedInstructor(instructorId);
-        setSelectedTime("");
-        if (selectedDate) {
-            setLoading(true);
-            const slots = await getAvailableTimeSlots(selectedDate, instructorId);
-            setTimeSlots(slots);
-            setLoading(false);
+        setPickupAddress("");
+        setMessage("");
+        if (instructorId) {
+            setStep(4);
         }
     }
 
@@ -87,7 +118,8 @@ export default function BookLesson() {
             setPickupAddress("");
             setStep(1);
         } catch (err) {
-            setMessage("✗ " + (err.message || "Booking failed. Please try again."));
+            console.error("Booking failed:", err);
+            setMessage("✗ " + getErrorMessage(err, "Booking failed. Please try again."));
         } finally {
             setLoading(false);
         }

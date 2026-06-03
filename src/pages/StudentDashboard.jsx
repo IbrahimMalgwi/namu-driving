@@ -5,18 +5,57 @@ import { getCurrentUserProfile } from "../services/authService";
 import { getNextLesson } from "../services/bookingService";
 import { getLatestAnnouncement } from "../services/announcementService";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
+
+const packageDetails = {
+    regular: {
+        label: "Regular Training",
+        price: "₦90,000",
+        icon: "🚗",
+        description: "Essential driving fundamentals",
+    },
+    special: {
+        label: "Special Training",
+        price: "₦300,000",
+        icon: "🏠",
+        description: "Home pick-up/drop-off training package",
+    },
+    premium_certificate: {
+        label: "Premium + Certificate",
+        price: "₦330,000",
+        icon: "🎓",
+        description: "Complete training with NAMU certificate",
+    },
+    premium_license: {
+        label: "Premium + 3-Year License",
+        price: "₦370,000",
+        icon: "📋",
+        description: "Complete training with license support",
+    },
+};
 
 export default function StudentDashboard() {
     const [userName, setUserName] = useState("");
     const [nextLesson, setNextLesson] = useState(null);
     const [announcement, setAnnouncement] = useState({ title: "Welcome!", content: "Your journey to confident driving starts here!" });
+    const [studentPackage, setStudentPackage] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         async function loadDashboard() {
             try {
                 const profile = await getCurrentUserProfile();
-                if (profile) setUserName(profile.full_name?.split(" ")[0] || "Student");
+                if (profile) {
+                    setUserName(profile.full_name?.split(" ")[0] || "Student");
+
+                    const { data: student } = await supabase
+                        .from("students")
+                        .select("training_package")
+                        .eq("user_id", profile.id)
+                        .maybeSingle();
+
+                    setStudentPackage(packageDetails[student?.training_package] || packageDetails.regular);
+                }
 
                 const lesson = await getNextLesson().catch(() => null);
                 setNextLesson(lesson);
@@ -110,8 +149,8 @@ export default function StudentDashboard() {
                             onClick={() => navigate("/learn")}
                         />
                         <ActionCard
-                            title="Training Plans"
-                            icon="💼"
+                            title="My Package"
+                            icon={studentPackage?.icon || "💼"}
                             color="from-purple-400 to-purple-600"
                             onClick={() => navigate("/catalog")}
                         />
@@ -123,6 +162,30 @@ export default function StudentDashboard() {
                         />
                     </div>
                 </div>
+
+                {/* Selected Package */}
+                {studentPackage && (
+                    <div className="bg-white rounded-2xl p-6 shadow border border-primary/10">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-sm font-bold text-secondary mb-2">Your Selected Package</p>
+                                <h2 className="text-2xl font-bold text-primary">
+                                    {studentPackage.icon} {studentPackage.label}
+                                </h2>
+                                <p className="text-gray-600 mt-2">{studentPackage.description}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-bold text-primary">{studentPackage.price}</p>
+                                <button
+                                    onClick={() => navigate("/catalog")}
+                                    className="mt-3 text-secondary font-bold text-sm hover:underline"
+                                >
+                                    View Details →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Announcement */}
                 <div className="bg-gradient-to-br from-primary/10 to-blue-50 border-l-4 border-primary rounded-2xl p-6 shadow">

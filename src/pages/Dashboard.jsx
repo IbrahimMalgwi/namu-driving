@@ -101,7 +101,7 @@ export default function Dashboard() {
     }
 
     return (
-        <Layout showBottomNav={false}>
+        <Layout showBottomNav={true} navRole="staff">
             <div className="space-y-6">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary to-blue-900 text-white rounded-2xl p-6 shadow-lg">

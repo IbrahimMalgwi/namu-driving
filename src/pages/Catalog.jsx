@@ -1,9 +1,13 @@
 // src/pages/Catalog.jsx
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import { getCurrentUserProfile } from "../services/authService";
+import { supabase } from "../lib/supabase";
 
 const plans = [
     {
+        value: "regular",
         title: "Regular Training",
         duration: "2 Weeks",
         price: "₦90,000",
@@ -19,6 +23,7 @@ const plans = [
         ]
     },
     {
+        value: "special",
         title: "Special Training",
         desc: "Home Pick-up/Drop-off",
         duration: "2 Weeks",
@@ -35,6 +40,7 @@ const plans = [
         ]
     },
     {
+        value: "premium_certificate",
         title: "Premium + Certificate",
         price: "₦330,000",
         highlight: true,
@@ -50,6 +56,7 @@ const plans = [
         ]
     },
     {
+        value: "premium_license",
         title: "Premium + 3-Year License",
         price: "₦370,000",
         highlight: false,
@@ -68,19 +75,65 @@ const plans = [
 
 export default function Catalog() {
     const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+    const [selectedPackage, setSelectedPackage] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadSelectedPackage() {
+            try {
+                const currentProfile = await getCurrentUserProfile();
+                setProfile(currentProfile);
+
+                if (currentProfile?.role === "student") {
+                    const { data, error } = await supabase
+                        .from("students")
+                        .select("training_package")
+                        .eq("user_id", currentProfile.id)
+                        .maybeSingle();
+
+                    if (error) throw error;
+                    setSelectedPackage(data?.training_package || "regular");
+                }
+            } catch (err) {
+                console.error("Unable to load selected package:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadSelectedPackage();
+    }, []);
+
+    const isStudent = profile?.role === "student";
+    const visiblePlans = isStudent
+        ? plans.filter((plan) => plan.value === selectedPackage)
+        : plans;
+    const navRole = isStudent ? "student" : "staff";
 
     return (
-        <Layout showBottomNav={true}>
+        <Layout showBottomNav={!!profile} navRole={navRole}>
             <div className="space-y-6">
                 <div className="bg-gradient-to-r from-primary to-blue-900 text-white rounded-2xl p-6 shadow-lg">
-                    <h2 className="text-3xl font-bold mb-2">📋 Service Catalog</h2>
-                    <p className="text-blue-100">Choose the perfect training package for your needs</p>
+                    <h2 className="text-3xl font-bold mb-2">
+                        {isStudent ? "📋 My Training Package" : "📋 Service Catalog"}
+                    </h2>
+                    <p className="text-blue-100">
+                        {isStudent
+                            ? "Your account shows only the package you selected during registration."
+                            : "Choose the perfect training package for your needs"}
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {plans.map((plan, i) => (
+                {loading ? (
+                    <div className="bg-white rounded-xl p-8 text-center text-gray-600 shadow">
+                        Loading package details...
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {visiblePlans.map((plan) => (
                         <div
-                            key={i}
+                            key={plan.value}
                             className={`rounded-2xl overflow-hidden transition transform hover:scale-105 ${
                                 plan.highlight 
                                     ? "bg-gradient-to-br from-secondary/20 to-red-50 border-4 border-secondary shadow-2xl md:col-span-2 md:max-w-lg" 
@@ -119,21 +172,23 @@ export default function Catalog() {
                                 </div>
 
                                 <button
-                                    onClick={() => navigate("/register")}
+                                    onClick={() => navigate(isStudent ? "/book-lesson" : "/register")}
                                     className={`w-full py-3 rounded-xl font-bold transition transform hover:scale-105 text-white ${
                                         plan.highlight
                                             ? "bg-gradient-to-r from-secondary to-red-600 shadow-lg"
                                             : "bg-primary hover:bg-blue-900"
-                                    }`}
+                                        }`}
                                 >
-                                    Enroll Now →
+                                    {isStudent ? "Book a Lesson →" : "Enroll Now →"}
                                 </button>
                             </div>
                         </div>
                     ))}
-                </div>
+                    </div>
+                )}
 
-                <div className="bg-blue-50 border-l-4 border-primary rounded-lg p-5 mt-8">
+                {!isStudent && (
+                    <div className="bg-blue-50 border-l-4 border-primary rounded-lg p-5 mt-8">
                     <h3 className="font-bold text-primary mb-2">💡 Need Help Choosing?</h3>
                     <p className="text-gray-700 text-sm mb-3">
                         Not sure which package is right for you? Our instructors can help!
@@ -141,7 +196,8 @@ export default function Catalog() {
                     <button className="text-secondary font-semibold text-sm hover:underline">
                         Contact us for a free consultation
                     </button>
-                </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );
