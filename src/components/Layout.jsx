@@ -25,7 +25,7 @@ export default function Layout({
 
     async function handleLogout() {
         await signOut();
-        navigate("/login");
+        navigate("/");
     }
 
     const studentNavItems = [
