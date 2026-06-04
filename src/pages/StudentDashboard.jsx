@@ -1,43 +1,31 @@
-// src/pages/StudentDashboard.jsx - Enhanced Dashboard
+// src/pages/StudentDashboard.jsx - Mobile-first app dashboard
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import BrandMark from "../components/BrandMark";
 import { getCurrentUserProfile } from "../services/authService";
 import { getNextLesson } from "../services/bookingService";
 import { getLatestAnnouncement } from "../services/announcementService";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
 const packageDetails = {
-    regular: {
-        label: "Regular Training",
-        price: "₦90,000",
-        icon: "🚗",
-        description: "Essential driving fundamentals",
-    },
-    special: {
-        label: "Special Training",
-        price: "₦300,000",
-        icon: "🏠",
-        description: "Home pick-up/drop-off training package",
-    },
-    premium_certificate: {
-        label: "Premium + Certificate",
-        price: "₦330,000",
-        icon: "🎓",
-        description: "Complete training with NAMU certificate",
-    },
-    premium_license: {
-        label: "Premium + 3-Year License",
-        price: "₦370,000",
-        icon: "📋",
-        description: "Complete training with license support",
-    },
+    regular: { label: "Regular Training", price: "₦90,000", icon: "🚗", description: "Essential driving fundamentals" },
+    special: { label: "Special Training", price: "₦300,000", icon: "🏠", description: "Home pick-up/drop-off training package" },
+    premium_certificate: { label: "Premium + Certificate", price: "₦330,000", icon: "🎓", description: "Complete training with NAMU certificate" },
+    premium_license: { label: "Premium + 3-Year License", price: "₦370,000", icon: "📋", description: "Complete training with license support" },
 };
+
+const actions = [
+    { title: "Book Lesson", icon: "📅", path: "/book-lesson", color: "bg-primary" },
+    { title: "Learn Driving", icon: "🎓", path: "/learn", color: "bg-secondary" },
+    { title: "My Progress", icon: "📈", path: "/progress", color: "bg-green-500" },
+    { title: "My Package", icon: "💼", path: "/catalog", color: "bg-purple-500" },
+];
 
 export default function StudentDashboard() {
     const [userName, setUserName] = useState("");
     const [nextLesson, setNextLesson] = useState(null);
-    const [announcement, setAnnouncement] = useState({ title: "Welcome!", content: "Your journey to confident driving starts here!" });
+    const [announcement, setAnnouncement] = useState({ title: "Road sign of the week", content: "Check road signs in Learn Driving and test your knowledge before your next lesson." });
     const [studentPackage, setStudentPackage] = useState(null);
     const navigate = useNavigate();
 
@@ -70,146 +58,96 @@ export default function StudentDashboard() {
     }, []);
 
     return (
-        <Layout showBottomNav={true}>
-            <div className="space-y-6 pb-10">
-                {/* Welcome Banner */}
-                <div className="bg-gradient-to-r from-primary to-blue-900 text-white rounded-3xl p-8 shadow-lg">
-                    <h1 className="text-4xl font-bold mb-2">Welcome, {userName}! 👋</h1>
-                    <p className="text-blue-100 text-lg">You're on your way to becoming a confident driver</p>
-                </div>
+        <Layout showBottomNav={true} contentClassName="flex-1 overflow-y-auto bg-slate-100">
+            <div className="mx-auto max-w-5xl md:px-4 md:py-6">
+                <section className="rounded-b-[2rem] bg-gradient-to-b from-[#061943] to-primary px-5 pb-8 pt-5 text-white shadow-xl md:rounded-[2rem]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <BrandMark compact light />
+                            <p className="mt-8 text-blue-100">Welcome back,</p>
+                            <h1 className="text-3xl font-black md:text-5xl">{userName || "Student"} 👋</h1>
+                        </div>
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-gold text-2xl shadow-lg">
+                            👤
+                        </div>
+                    </div>
+                </section>
 
-                {/* Next Lesson Card */}
-                <div className="bg-gradient-to-br from-secondary/20 to-red-50 rounded-2xl shadow-lg p-6 border-l-8 border-secondary">
-                    <h2 className="text-lg font-bold text-secondary mb-4">📅 Your Next Lesson</h2>
-                    {nextLesson ? (
-                        <div className="space-y-3">
-                            <div className="flex items-center space-x-4">
-                                <div className="bg-white rounded-xl p-4 flex-1">
-                                    <p className="text-gray-600 text-xs mb-1">Date & Time</p>
-                                    <p className="font-bold text-gray-800">{nextLesson.date}</p>
-                                    <p className="text-secondary font-bold text-lg">{nextLesson.time}</p>
-                                </div>
+                <div className="space-y-5 px-4 py-5 md:px-0">
+                    <div className="-mt-12 rounded-[2rem] bg-white p-5 shadow-2xl md:mt-0">
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-black text-slate-500">Next Lesson</p>
+                                {nextLesson ? (
+                                    <>
+                                        <h2 className="mt-1 text-lg font-black text-primary">{nextLesson.date}</h2>
+                                        <p className="mt-1 text-sm font-semibold text-slate-700">{nextLesson.time}</p>
+                                        <p className="text-sm text-slate-500">Instructor: {nextLesson.instructor}</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h2 className="mt-1 text-lg font-black text-primary">No lesson booked yet</h2>
+                                        <p className="text-sm text-slate-500">Reserve your next practical session.</p>
+                                    </>
+                                )}
                             </div>
-                            <div className="bg-white rounded-xl p-4">
-                                <p className="text-gray-600 text-xs mb-1">Instructor</p>
-                                <p className="font-bold text-lg text-primary">👨‍🏫 {nextLesson.instructor}</p>
+                            <div className="relative h-20 w-28 shrink-0 rounded-2xl bg-gradient-to-br from-slate-900 to-primary p-2">
+                                <div className="absolute bottom-3 left-4 right-4 h-8 rounded-t-2xl bg-blue-950 shadow-lg" />
+                                <div className="absolute bottom-6 left-6 h-2 w-7 rounded-full bg-blue-100" />
+                                <div className="absolute bottom-6 right-6 h-2 w-7 rounded-full bg-blue-100" />
                             </div>
                         </div>
-                    ) : (
-                        <div className="bg-white rounded-xl p-6 text-center">
-                            <p className="text-gray-600 mb-3">No lessons scheduled yet</p>
+                        <button
+                            onClick={() => navigate("/book-lesson")}
+                            className="mt-5 w-full rounded-2xl bg-secondary py-3 font-black text-white shadow-lg transition hover:bg-red-600 md:w-auto md:px-6"
+                        >
+                            {nextLesson ? "Book Another Lesson" : "Book Lesson"}
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        {actions.map((action) => (
                             <button
-                                onClick={() => navigate("/book-lesson")}
-                                className="bg-secondary hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition"
+                                key={action.title}
+                                onClick={() => navigate(action.path)}
+                                className="rounded-[1.5rem] bg-white p-5 text-center shadow transition hover:-translate-y-1 hover:shadow-xl"
                             >
-                                📅 Book Your First Lesson
+                                <span className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl ${action.color} text-3xl text-white shadow`}>
+                                    {action.icon}
+                                </span>
+                                <p className="mt-3 text-sm font-black text-slate-800">{action.title}</p>
                             </button>
+                        ))}
+                    </div>
+
+                    {studentPackage && (
+                        <div className="rounded-[1.5rem] bg-white p-5 shadow">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-sm font-black text-secondary">Selected Package</p>
+                                    <h2 className="mt-1 text-xl font-black text-primary">{studentPackage.icon} {studentPackage.label}</h2>
+                                    <p className="mt-1 text-sm text-slate-500">{studentPackage.description}</p>
+                                </div>
+                                <p className="text-right text-lg font-black text-primary">{studentPackage.price}</p>
+                            </div>
                         </div>
                     )}
-                </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-blue-50 border border-primary/30 rounded-xl p-5 text-center hover:shadow-lg transition">
-                        <div className="text-3xl mb-2">📊</div>
-                        <p className="text-gray-600 text-sm mb-2">Track Progress</p>
-                        <button
-                            onClick={() => navigate("/progress")}
-                            className="text-primary font-bold hover:underline text-sm"
-                        >
-                            View Now →
-                        </button>
-                    </div>
-                    <div className="bg-green-50 border border-success/30 rounded-xl p-5 text-center hover:shadow-lg transition">
-                        <div className="text-3xl mb-2">📚</div>
-                        <p className="text-gray-600 text-sm mb-2">Learn Driving</p>
-                        <button
-                            onClick={() => navigate("/learn")}
-                            className="text-success font-bold hover:underline text-sm"
-                        >
-                            Start Now →
-                        </button>
-                    </div>
-                </div>
-
-                {/* Quick Actions Grid */}
-                <div className="space-y-3">
-                    <h2 className="text-lg font-bold text-primary">⚡ Quick Actions</h2>
-                    <div className="grid grid-cols-2 gap-3">
-                        <ActionCard
-                            title="Book Lesson"
-                            icon="📅"
-                            color="from-blue-400 to-blue-600"
-                            onClick={() => navigate("/book-lesson")}
-                        />
-                        <ActionCard
-                            title="View Lessons"
-                            icon="🎓"
-                            color="from-green-400 to-green-600"
-                            onClick={() => navigate("/learn")}
-                        />
-                        <ActionCard
-                            title="My Package"
-                            icon={studentPackage?.icon || "💼"}
-                            color="from-purple-400 to-purple-600"
-                            onClick={() => navigate("/catalog")}
-                        />
-                        <ActionCard
-                            title="Profile"
-                            icon="👤"
-                            color="from-orange-400 to-orange-600"
-                            onClick={() => navigate("/progress")}
-                        />
-                    </div>
-                </div>
-
-                {/* Selected Package */}
-                {studentPackage && (
-                    <div className="bg-white rounded-2xl p-6 shadow border border-primary/10">
-                        <div className="flex items-start justify-between gap-4">
+                    <div className="rounded-[1.5rem] bg-white p-5 shadow">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-black text-slate-900">Quick Tips</h3>
+                            <button onClick={() => navigate("/learn")} className="text-sm font-black text-secondary">View all</button>
+                        </div>
+                        <div className="mt-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
+                            <span className="text-3xl">⚠️</span>
                             <div>
-                                <p className="text-sm font-bold text-secondary mb-2">Your Selected Package</p>
-                                <h2 className="text-2xl font-bold text-primary">
-                                    {studentPackage.icon} {studentPackage.label}
-                                </h2>
-                                <p className="text-gray-600 mt-2">{studentPackage.description}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-2xl font-bold text-primary">{studentPackage.price}</p>
-                                <button
-                                    onClick={() => navigate("/catalog")}
-                                    className="mt-3 text-secondary font-bold text-sm hover:underline"
-                                >
-                                    View Details →
-                                </button>
+                                <p className="font-bold text-slate-800">{announcement.title}</p>
+                                <p className="text-sm text-slate-500">{announcement.content}</p>
                             </div>
                         </div>
                     </div>
-                )}
-
-                {/* Announcement */}
-                <div className="bg-gradient-to-br from-primary/10 to-blue-50 border-l-4 border-primary rounded-2xl p-6 shadow">
-                    <h3 className="font-bold text-primary mb-2 text-lg">📢 {announcement.title}</h3>
-                    <p className="text-gray-700 text-sm leading-relaxed">{announcement.content}</p>
-                </div>
-
-                {/* Trust Section */}
-                <div className="bg-white rounded-xl p-5 shadow text-center space-y-2">
-                    <p className="text-sm text-gray-600">✓ Female-led Academy | ✓ Safe & Certified | ✓ Track Your Progress</p>
                 </div>
             </div>
         </Layout>
-    );
-}
-
-function ActionCard({ title, icon, color, onClick }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`bg-gradient-to-br ${color} text-white rounded-2xl shadow-lg p-5 text-center hover:shadow-xl hover:scale-105 transition transform`}
-        >
-            <div className="text-3xl mb-2">{icon}</div>
-            <p className="font-bold text-sm">{title}</p>
-        </button>
     );
 }

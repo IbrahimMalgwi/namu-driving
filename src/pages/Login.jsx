@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import BrandMark from "../components/BrandMark";
 import { signIn, getCurrentUserProfile } from "../services/authService";
 
 export default function Login() {
@@ -28,17 +29,15 @@ export default function Login() {
 
     return (
         <Layout showPublicNav title="Login" contentClassName="flex-1 overflow-y-auto">
-            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-primary/10 to-muted flex items-center justify-center px-4 py-10">
+            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-[#061943] via-primary/10 to-muted flex items-center justify-center px-4 py-10">
             <div className="w-full max-w-md">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-primary">NAMU</h1>
-                    <p className="text-gray-600 text-sm mt-2">Driving School</p>
-                    <p className="text-gray-500 text-xs mt-1">Giving you confidence on the wheel</p>
+                <div className="mb-8 flex justify-center">
+                    <BrandMark light />
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-3xl shadow-2xl p-8">
+                <div className="bg-white rounded-[2rem] shadow-2xl p-8">
                     <h2 className="text-2xl font-bold text-primary text-center mb-2">Welcome Back!</h2>
                     <p className="text-center text-gray-600 text-sm mb-8">Sign in to your account</p>
 
@@ -49,7 +48,7 @@ export default function Login() {
                                 type="email"
                                 required
                                 placeholder="you@example.com"
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
+                                className="w-full border border-gray-200 rounded-2xl px-4 py-4 focus:outline-none focus:border-primary transition"
                                 value={form.email}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                             />
@@ -61,7 +60,7 @@ export default function Login() {
                                 type="password"
                                 required
                                 placeholder="Enter your password"
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
+                                className="w-full border border-gray-200 rounded-2xl px-4 py-4 focus:outline-none focus:border-primary transition"
                                 value={form.password}
                                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                             />
@@ -86,7 +85,7 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-primary to-blue-900 text-white rounded-xl py-4 font-bold text-lg hover:shadow-xl transition disabled:opacity-60 transform hover:scale-105"
+                            className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-lg hover:shadow-xl transition disabled:opacity-60 transform hover:scale-[1.01]"
                         >
                             {loading ? "Signing in..." : "Sign In"}
                         </button>
@@ -102,7 +101,7 @@ export default function Login() {
                     {/* Sign Up Link */}
                     <button
                         onClick={() => navigate("/register")}
-                        className="w-full border-2 border-secondary text-secondary rounded-xl py-3 font-bold hover:bg-red-50 transition"
+                        className="w-full border border-slate-300 text-primary rounded-2xl py-3 font-bold hover:bg-slate-50 transition"
                     >
                         Create New Account
                     </button>

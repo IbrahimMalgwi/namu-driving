@@ -81,31 +81,40 @@ export default function Learn() {
     const activeGroup = groups.find((group) => group.value === activeType);
 
     return (
-        <Layout showBottomNav={true}>
-            <div className="space-y-6">
-                <div className="bg-gradient-to-r from-primary to-blue-900 text-white rounded-2xl p-6 shadow-lg">
-                    <h2 className="text-3xl font-bold mb-2">📚 Learn to Drive</h2>
-                    <p className="text-blue-100">Lessons, road signs, driving tips, and car maintenance guidance for your training.</p>
+        <Layout showBottomNav={true} title="Learn Driving" contentClassName="flex-1 overflow-y-auto bg-slate-100">
+            <div className="mx-auto max-w-5xl md:px-4 md:py-6">
+                <div className="bg-primary px-5 py-5 text-white shadow-lg md:rounded-t-[2rem]">
+                    <h1 className="text-center text-xl font-black">Learn Driving</h1>
+                    <p className="mt-1 text-center text-sm text-blue-100">Lessons, road signs, tips, and maintenance</p>
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="mx-4 mt-5 rounded-[1.5rem] bg-white p-8 text-center text-gray-500 shadow">
                         Loading learning content...
                     </div>
                 ) : (
-                    <>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white md:p-6 md:shadow-xl">
+                        <div className="flex items-center justify-between">
+                            <h2 className="font-black text-slate-900">Categories</h2>
+                            <span className="text-sm font-black text-secondary">View all</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                             {groups.map((group) => (
                                 <button
                                     key={group.value}
                                     onClick={() => setActiveType(group.value)}
-                                    className={`rounded-2xl p-4 text-left shadow transition ${
+                                    className={`rounded-[1.5rem] p-4 text-left shadow transition hover:-translate-y-1 ${
                                         activeType === group.value
-                                            ? "bg-secondary text-white"
+                                            ? "bg-primary text-white"
                                             : "bg-white text-gray-800 hover:shadow-lg"
                                     }`}
                                 >
-                                    <div className="text-3xl mb-2">{group.icon}</div>
+                                    <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl text-2xl ${
+                                        activeType === group.value ? "bg-white/20" : "bg-primary/10"
+                                    }`}>
+                                        {group.icon}
+                                    </div>
                                     <p className="font-bold">{group.label}</p>
                                     <p className={activeType === group.value ? "text-white/80 text-sm" : "text-gray-500 text-sm"}>
                                         {group.items.length} items
@@ -115,20 +124,20 @@ export default function Learn() {
                         </div>
 
                         {!activeGroup || activeGroup.items.length === 0 ? (
-                            <div className="bg-blue-50 border border-primary/30 rounded-xl p-6 text-center">
+                            <div className="rounded-[1.5rem] border border-primary/20 bg-blue-50 p-6 text-center">
                                 <p className="text-gray-600">No content available in this section yet.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <h3 className="text-2xl font-bold text-primary">
+                                <h3 className="text-2xl font-black text-primary">
                                     {activeGroup.icon} {activeGroup.label}
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {activeGroup.items.map((item) => (
-                                        <article key={item.id} className="bg-white rounded-2xl shadow p-5 border border-gray-100">
+                                        <article key={item.id} className="bg-white rounded-[1.5rem] shadow p-5 border border-gray-100">
                                             <div className="flex items-start justify-between gap-3 mb-3">
-                                                <h4 className="text-lg font-bold text-primary">{item.title}</h4>
+                                                <h4 className="text-lg font-black text-primary">{item.title}</h4>
                                                 <span className={`text-xs font-bold rounded-full px-3 py-1 ${
                                                     item.is_fixed
                                                         ? "bg-blue-50 text-primary"
@@ -178,10 +187,10 @@ export default function Learn() {
                                 </div>
                             </div>
                         )}
-                    </>
+                    </div>
                 )}
 
-                <div className="bg-green-50 border-l-4 border-success rounded-lg p-6">
+                <div className="mx-4 mb-5 rounded-[1.5rem] border-l-4 border-success bg-green-50 p-6 md:mx-0">
                     <h3 className="font-bold text-success mb-3">💡 Learning Tips</h3>
                     <ul className="text-sm text-gray-700 space-y-2">
                         <li>✓ Review each section before your practical lesson</li>

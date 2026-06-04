@@ -1,206 +1,116 @@
 // src/pages/LandingPage.jsx
-
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import BrandMark from "../components/BrandMark";
+
+const services = [
+    { title: "Professional Training", desc: "Learn from experienced and certified instructors.", icon: "🛡️" },
+    { title: "Safe Driving", desc: "We teach defensive driving for safer roads.", icon: "🚘" },
+    { title: "Easy Booking", desc: "Book lessons easily anytime, anywhere.", icon: "📅" },
+    { title: "Your Success", desc: "Track progress until you are road-ready.", icon: "🏅" },
+];
+
+const appCards = [
+    { title: "Book Lesson", icon: "📅", color: "bg-primary", path: "/book-lesson" },
+    { title: "Learn Driving", icon: "🎓", color: "bg-secondary", path: "/learn" },
+    { title: "My Progress", icon: "📈", color: "bg-green-500", path: "/progress" },
+    { title: "Catalog", icon: "💼", color: "bg-purple-500", path: "/catalog" },
+];
 
 export default function LandingPage() {
     const navigate = useNavigate();
 
-    const features = [
-        {
-            title: "PROFESSIONAL TRAINING",
-            desc: "Learn from experienced and certified female instructors.",
-            icon: "👩‍🏫",
-        },
-        {
-            title: "TRUSTED & SAFE",
-            desc: "Certified methods ensuring your safety and confidence.",
-            icon: "🛡️",
-        },
-        {
-            title: "FLEXIBLE SCHEDULING",
-            desc: "Book lessons easily anytime, anywhere with convenient pickups.",
-            icon: "📅",
-        },
-        {
-            title: "TRACK YOUR PROGRESS",
-            desc: "Monitor your skills and confidence level in real-time.",
-            icon: "📈",
-        },
-    ];
-
-    const categories = [
-        { name: "Traffic Signs", lessons: 12, icon: "🛑" },
-        { name: "Parallel Parking", lessons: 8, icon: "🅿️" },
-        { name: "Highway Driving", lessons: 10, icon: "🛣️" },
-        { name: "Defensive Driving", lessons: 15, icon: "🚗" },
-    ];
-
-    const plans = [
-        {
-            title: "Regular Training",
-            price: "₦90,000",
-            duration: "2 Weeks",
-            features: ["Vehicle provided", "2-week course", "Basic skills"],
-            highlight: false
-        },
-        {
-            title: "Special Training",
-            price: "₦300,000",
-            desc: "Home Pick-up/Drop-off",
-            duration: "2 Weeks",
-            features: ["Home pickup & dropoff", "2-week course", "Premium vehicle"],
-            highlight: false
-        },
-        {
-            title: "Premium + Certificate",
-            price: "₦330,000",
-            duration: "2 Weeks",
-            features: ["All Special Training features", "Official Certificate", "Exam prep"],
-            highlight: true
-        },
-        {
-            title: "Premium + 3-Year License",
-            price: "₦370,000",
-            duration: "2 Weeks",
-            features: ["All Premium features", "3-Year License", "Lifetime support"],
-            highlight: false
-        },
-    ];
-
     return (
         <Layout showPublicNav title="Home" contentClassName="flex-1 overflow-y-auto">
-            <div className="min-h-screen bg-gradient-to-b from-primary via-blue-50 to-muted">
-            {/* Header / Hero Section */}
-            <div className="bg-gradient-to-r from-primary to-blue-900 text-white py-16 px-4 text-center relative overflow-hidden">
-                <div className="max-w-4xl mx-auto relative z-10">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-3 drop-shadow-lg">NAMU DRIVING SCHOOL</h1>
-                    <p className="text-xl md:text-2xl text-blue-100 mb-2 font-semibold">
-                        🎯 Giving you confidence on the wheel
-                    </p>
-                    <p className="text-base md:text-lg text-blue-50 mb-8">
-                        Female-led driving academy specializing in safe, professional training
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button
-                            onClick={() => navigate("/login")}
-                            className="bg-secondary hover:bg-red-700 text-white font-semibold py-4 px-10 rounded-xl transition shadow-lg transform hover:scale-105"
-                        >
-                            Login
-                        </button>
-                        <button
-                            onClick={() => navigate("/register")}
-                            className="bg-white text-primary hover:bg-gray-100 font-semibold py-4 px-10 rounded-xl transition shadow-lg transform hover:scale-105"
-                        >
-                            Start Training
-                        </button>
-                    </div>
-                    <div className="flex justify-center mt-8">
-                        <button
-                            onClick={() => navigate("/catalog")}
-                            className="text-primary hover:text-secondary font-semibold text-lg transition underline"
-                        >
-                            View Full Catalog →
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Features Grid */}
-            <div className="max-w-6xl mx-auto px-4 py-16">
-                <h2 className="text-3xl font-bold text-center text-primary mb-12">Why Choose NAMU?</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {features.map((f, i) => (
-                        <div key={i} className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-                            <div className="text-5xl mb-4">{f.icon}</div>
-                            <h3 className="font-bold text-primary text-lg mb-3">{f.title}</h3>
-                            <p className="text-gray-600 text-sm leading-relaxed">{f.desc}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Key Skills We Teach */}
-            <div className="bg-white py-16">
-                <div className="max-w-6xl mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-primary text-center mb-10">
-                        ✨ Skills You'll Master
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {categories.map((cat, i) => (
-                            <div key={i} className="border-2 border-primary/20 bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 hover:border-secondary hover:shadow-lg transition">
-                                <div className="text-4xl mb-3">{cat.icon}</div>
-                                <h3 className="font-bold text-lg text-primary mb-2">{cat.name}</h3>
-                                <p className="text-gray-500">Comprehensive lessons</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Pricing Plans */}
-            <div className="py-16 bg-gradient-to-b from-muted to-primary/5">
-                <div className="max-w-6xl mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-primary text-center mb-12">
-                        💰 Choose Your Training Package
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {plans.map((plan, i) => (
-                            <div
-                                key={i}
-                                className={`bg-white rounded-2xl shadow-lg p-8 text-center relative transition transform hover:scale-105 ${
-                                    plan.highlight ? "border-4 border-secondary ring-8 ring-secondary/10 md:row-span-2 md:col-span-1" : "border border-gray-200"
-                                }`}
-                            >
-                                {plan.highlight && (
-                                    <span className="absolute -top-4 right-4 bg-gradient-to-r from-secondary to-red-600 text-white text-xs px-4 py-1 rounded-full font-bold shadow-lg">
-                                        ⭐ MOST POPULAR
-                                    </span>
-                                )}
-                                <h3 className="font-bold text-2xl mb-2 text-primary">{plan.title}</h3>
-                                {plan.desc && <p className="text-secondary text-sm font-semibold mb-3">{plan.desc}</p>}
-                                <div className="text-primary text-4xl font-bold my-5">{plan.price}</div>
-                                {plan.duration && <p className="text-gray-500 text-sm mb-5 font-medium">{plan.duration}</p>}
-                                <ul className="text-left text-sm space-y-2 mb-6">
-                                    {plan.features?.map((feature, idx) => (
-                                        <li key={idx} className="flex items-center text-gray-700">
-                                            <span className="text-secondary mr-2">✓</span>
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
+            <div className="min-h-screen bg-white">
+                <section className="relative overflow-hidden bg-gradient-to-br from-[#041638] via-primary to-[#051d4c] text-white">
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent" />
+                    <div className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
+                    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-[1fr_0.85fr] md:items-center lg:py-20">
+                        <div className="relative z-10">
+                            <BrandMark light />
+                            <p className="mt-6 max-w-xl text-2xl font-semibold leading-snug text-blue-100">
+                                Giving you confidence on the wheel.
+                            </p>
+                            <p className="mt-4 max-w-2xl text-base leading-7 text-blue-100/90">
+                                A mobile-first driving school experience for booking lessons, learning road rules, and tracking your performance from your first class to road confidence.
+                            </p>
+                            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                                 <button
                                     onClick={() => navigate("/register")}
-                                    className={`w-full py-3 rounded-xl font-semibold transition ${
-                                        plan.highlight
-                                            ? "bg-secondary hover:bg-red-700 text-white shadow-lg"
-                                            : "bg-primary hover:bg-blue-900 text-white"
-                                    }`}
+                                    className="rounded-2xl bg-secondary px-8 py-4 text-base font-black text-white shadow-xl shadow-red-950/20 transition hover:-translate-y-0.5 hover:bg-red-600"
                                 >
-                                    Enroll Now
+                                    Create Account
                                 </button>
+                                <button
+                                    onClick={() => navigate("/catalog")}
+                                    className="rounded-2xl border border-white/30 bg-white/10 px-8 py-4 text-base font-black text-white transition hover:bg-white/20"
+                                >
+                                    View Services
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="relative z-10 mx-auto w-full max-w-[340px] rounded-[2.5rem] border-[10px] border-slate-950 bg-slate-950 p-3 shadow-2xl">
+                            <div className="overflow-hidden rounded-[1.8rem] bg-gradient-to-b from-[#071a44] to-[#020817] px-5 py-8 text-center text-white">
+                                <div className="mx-auto mb-8 h-6 w-28 rounded-full bg-black/50" />
+                                <div className="flex justify-center">
+                                    <BrandMark light />
+                                </div>
+                                <p className="mt-6 text-lg font-semibold text-blue-100">Giving you confidence<br />on the wheel.</p>
+                                <div className="relative mx-auto mt-10 h-36 w-64 overflow-hidden rounded-t-full bg-gradient-to-b from-blue-400/10 to-transparent">
+                                    <div className="absolute bottom-4 left-8 right-8 h-20 rounded-t-[4rem] border-t-8 border-blue-300/30" />
+                                    <div className="absolute bottom-0 left-12 right-12 h-14 rounded-t-3xl bg-slate-900 shadow-2xl">
+                                        <div className="absolute left-5 top-5 h-3 w-10 rounded-full bg-blue-200" />
+                                        <div className="absolute right-5 top-5 h-3 w-10 rounded-full bg-blue-200" />
+                                    </div>
+                                </div>
+                                <div className="mt-8 flex justify-center gap-2">
+                                    <span className="h-1.5 w-8 rounded-full bg-gold" />
+                                    <span className="h-1.5 w-3 rounded-full bg-white/60" />
+                                    <span className="h-1.5 w-3 rounded-full bg-white/60" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mx-auto max-w-6xl px-4 py-12">
+                    <div className="grid gap-4 md:grid-cols-4">
+                        {services.map((service) => (
+                            <div key={service.title} className="rounded-3xl bg-[#061943] p-6 text-white shadow-xl">
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-gold/60 text-3xl text-gold">
+                                    {service.icon}
+                                </div>
+                                <h3 className="font-black uppercase tracking-wide">{service.title}</h3>
+                                <p className="mt-2 text-sm leading-6 text-blue-100">{service.desc}</p>
                             </div>
                         ))}
                     </div>
-                </div>
-            </div>
+                </section>
 
-            {/* Call to Action */}
-            <div className="bg-gradient-to-r from-primary to-blue-900 text-white py-16 text-center">
-                <div className="max-w-2xl mx-auto px-4">
-                    <h2 className="text-3xl font-bold mb-4">🎯 Ready to Become a Confident Driver?</h2>
-                    <p className="text-lg text-blue-100 mb-8">Join hundreds of women who've transformed their driving skills with NAMU Driving School</p>
-                    <button
-                        onClick={() => navigate("/register")}
-                        className="bg-secondary hover:bg-red-700 text-white font-semibold py-4 px-12 rounded-xl transition shadow-lg transform hover:scale-105 text-lg"
-                    >
-                        Start Your Journey Today
-                    </button>
-                    <p className="text-sm text-blue-200 mt-8">
-                        ✓ No experience necessary | ✓ Female instructors | ✓ Safe & professional
-                    </p>
-                </div>
-            </div>
+                <section className="bg-slate-50 px-4 py-12">
+                    <div className="mx-auto max-w-6xl">
+                        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <p className="text-sm font-black uppercase tracking-[0.22em] text-secondary">Mobile services</p>
+                                <h2 className="mt-2 text-3xl font-black text-slate-950">Everything students need in one dashboard.</h2>
+                            </div>
+                            <button onClick={() => navigate("/register")} className="w-fit rounded-2xl bg-primary px-6 py-3 font-black text-white">
+                                Start Training
+                            </button>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {appCards.map((card) => (
+                                <button key={card.title} onClick={() => navigate(card.path)} className="rounded-3xl bg-white p-6 text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                                    <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${card.color} text-3xl text-white`}>{card.icon}</span>
+                                    <h3 className="mt-5 text-xl font-black text-slate-900">{card.title}</h3>
+                                    <p className="mt-2 text-sm text-slate-500">Open the {card.title.toLowerCase()} service.</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </section>
             </div>
         </Layout>
     );

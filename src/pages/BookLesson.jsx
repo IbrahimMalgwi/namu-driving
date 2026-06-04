@@ -1,4 +1,4 @@
-//src/pages/BookLesson.jsx - Enhanced Booking Form
+//src/pages/BookLesson.jsx - Mobile-first booking flow
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { getInstructors, getAvailableTimeSlots, createBooking } from "../services/bookingService";
@@ -88,14 +88,11 @@ export default function BookLesson() {
         }
     }
 
-    async function handleInstructorChange(e) {
-        const instructorId = e.target.value;
+    function handleInstructorChange(instructorId) {
         setSelectedInstructor(instructorId);
         setPickupAddress("");
         setMessage("");
-        if (instructorId) {
-            setStep(4);
-        }
+        if (instructorId) setStep(4);
     }
 
     async function handleSubmit(e) {
@@ -111,7 +108,6 @@ export default function BookLesson() {
                 packageType: studentPackage,
             });
             setMessage("✓ Booking request sent! We'll confirm within 24 hours.");
-            // reset form
             setSelectedDate("");
             setSelectedTime("");
             setSelectedInstructor("");
@@ -125,169 +121,132 @@ export default function BookLesson() {
         }
     }
 
+    const selectedInstructorData = instructors.find((inst) => inst.id === selectedInstructor);
+
     return (
-        <Layout showBottomNav={true}>
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-primary to-blue-900 text-white rounded-2xl p-6 shadow-lg">
-                    <h2 className="text-3xl font-bold mb-2">📅 Book a Lesson</h2>
-                    <p className="text-blue-100">Reserve your lesson in just 4 simple steps</p>
+        <Layout showBottomNav={true} title="Book Lesson" contentClassName="flex-1 overflow-y-auto bg-slate-100">
+            <div className="mx-auto max-w-3xl md:px-4 md:py-6">
+                <div className="bg-primary px-5 py-5 text-white shadow-lg md:rounded-t-[2rem]">
+                    <h1 className="text-center text-xl font-black">Book Lesson</h1>
+                    <p className="mt-1 text-center text-sm text-blue-100">Reserve a lesson in four quick steps</p>
                 </div>
 
-                {/* Progress Steps */}
-                <div className="flex justify-between mb-8">
-                    {[1, 2, 3, 4].map(s => (
-                        <div key={s} className="flex items-center flex-1">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                                step >= s ? "bg-secondary text-white" : "bg-gray-200 text-gray-600"
-                            }`}>
-                                {s}
-                            </div>
-                            {s < 4 && <div className={`h-1 flex-1 mx-2 ${step > s ? "bg-secondary" : "bg-gray-200"}`}></div>}
-                        </div>
-                    ))}
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white md:p-6 md:shadow-xl">
+                    <StepCard number="1" title="Select Date" active>
+                        <input
+                            type="date"
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 font-bold text-slate-800 focus:border-primary focus:outline-none"
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            min={new Date().toISOString().split("T")[0]}
+                            required
+                        />
+                    </StepCard>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Step 1: Select Date */}
-                    {step >= 1 && (
-                        <div className="bg-white p-6 rounded-2xl shadow-lg">
-                            <h3 className="font-bold text-lg text-primary mb-4 flex items-center">
-                                <span className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">1</span>
-                                Select Date
-                            </h3>
-                            <input
-                                type="date"
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
-                                value={selectedDate}
-                                onChange={handleDateChange}
-                                min={new Date().toISOString().split("T")[0]}
-                                required
-                            />
-                        </div>
-                    )}
-
-                    {/* Step 2: Select Time */}
-                    {selectedDate && step >= 2 && (
-                        <div className="bg-white p-6 rounded-2xl shadow-lg">
-                            <h3 className="font-bold text-lg text-primary mb-4 flex items-center">
-                                <span className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">2</span>
-                                Select Time
-                            </h3>
+                    {selectedDate && (
+                        <StepCard number="2" title="Select Time" active={step >= 2}>
                             {loading ? (
-                                <p className="text-gray-600 text-center py-4">Loading available times...</p>
+                                <p className="py-4 text-center text-sm text-slate-500">Loading available times...</p>
                             ) : (
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                     {timeSlots.length > 0 ? (
                                         timeSlots.map((slot) => (
                                             <button
                                                 key={slot}
                                                 type="button"
-                                                onClick={() => {setSelectedTime(slot); setStep(3);}}
-                                                className={`py-3 rounded-xl border-2 font-semibold transition ${
+                                                onClick={() => { setSelectedTime(slot); setStep(3); }}
+                                                className={`rounded-2xl border px-4 py-3 text-sm font-black transition ${
                                                     selectedTime === slot
-                                                        ? "bg-primary text-white border-primary"
-                                                        : "bg-gray-50 text-gray-800 border-gray-200 hover:border-primary"
+                                                        ? "border-primary bg-primary text-white shadow"
+                                                        : "border-slate-200 bg-white text-slate-700 hover:border-primary"
                                                 }`}
                                             >
                                                 {slot}
                                             </button>
                                         ))
                                     ) : (
-                                        <p className="col-span-3 text-gray-500 text-center">No available slots for this date.</p>
+                                        <p className="col-span-full text-center text-sm text-slate-500">No available slots for this date.</p>
                                     )}
                                 </div>
                             )}
-                        </div>
+                        </StepCard>
                     )}
 
-                    {/* Step 3: Choose Instructor */}
-                    {selectedTime && step >= 3 && (
-                        <div className="bg-white p-6 rounded-2xl shadow-lg">
-                            <h3 className="font-bold text-lg text-primary mb-4 flex items-center">
-                                <span className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">3</span>
-                                Choose Instructor
-                            </h3>
-                            <select
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
-                                value={selectedInstructor}
-                                onChange={handleInstructorChange}
-                                required
-                            >
-                                <option value="">Select your preferred instructor</option>
+                    {selectedTime && (
+                        <StepCard number="3" title="Choose Instructor" active={step >= 3}>
+                            <div className="space-y-3">
                                 {instructors.map((inst) => (
-                                    <option key={inst.id} value={inst.id}>
-                                        👩‍🏫 {inst.full_name} {inst.phone && `(${inst.phone})`}
-                                    </option>
+                                    <button
+                                        key={inst.id}
+                                        type="button"
+                                        onClick={() => handleInstructorChange(inst.id)}
+                                        className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left transition ${
+                                            selectedInstructor === inst.id
+                                                ? "border-primary bg-blue-50"
+                                                : "border-slate-200 bg-white hover:border-primary"
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold text-xl">👩‍🏫</span>
+                                            <div>
+                                                <p className="font-black text-slate-900">{inst.full_name}</p>
+                                                <p className="text-xs text-slate-500">{inst.phone || "Certified instructor"}</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-xl text-primary">{selectedInstructor === inst.id ? "✓" : "›"}</span>
+                                    </button>
                                 ))}
-                            </select>
-                        </div>
+                            </div>
+                        </StepCard>
                     )}
 
-                    {/* Step 4: Pickup Location */}
-                    {selectedInstructor && step >= 4 && (
-                        <div className="bg-white p-6 rounded-2xl shadow-lg">
-                            <h3 className="font-bold text-lg text-primary mb-4 flex items-center">
-                                <span className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">4</span>
-                                Pickup Location
-                            </h3>
+                    {selectedInstructor && (
+                        <StepCard number="4" title="Pickup Location" active={step >= 4}>
+                            {selectedInstructorData && (
+                                <p className="mb-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+                                    Instructor: {selectedInstructorData.full_name}
+                                </p>
+                            )}
                             <input
                                 type="text"
-                                placeholder="e.g., Ikeja, Lagos or your home address"
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition mb-3"
+                                placeholder="Ikeja, Lagos or your home address"
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 focus:border-primary focus:outline-none"
                                 value={pickupAddress}
                                 onChange={(e) => setPickupAddress(e.target.value)}
                                 required
                             />
-                            <p className="text-sm text-gray-600">
-                                📍 Please provide a detailed location for pickup
-                            </p>
-                        </div>
+                        </StepCard>
                     )}
 
-                    {/* Message Alert */}
                     {message && (
-                        <div className={`p-4 rounded-xl text-center font-semibold ${
-                            message.includes("✓") 
-                                ? "bg-green-100 text-green-800" 
-                                : "bg-red-100 text-red-800"
+                        <div className={`rounded-2xl p-4 text-center text-sm font-black ${
+                            message.includes("✓") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                         }`}>
                             {message}
                         </div>
                     )}
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-3">
-                        {step > 1 && (
-                            <button
-                                type="button"
-                                onClick={() => setStep(step - 1)}
-                                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-xl font-bold transition"
-                            >
-                                ← Back
-                            </button>
-                        )}
-                        {step < 4 && selectedDate && selectedTime && selectedInstructor && (
-                            <button
-                                type="button"
-                                onClick={() => setStep(step + 1)}
-                                className="flex-1 bg-primary hover:bg-blue-900 text-white py-3 rounded-xl font-bold transition"
-                            >
-                                Next →
-                            </button>
-                        )}
-                        {step === 4 && pickupAddress && (
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex-1 bg-secondary hover:bg-red-700 text-white py-4 rounded-xl font-bold transition disabled:opacity-50 text-lg"
-                            >
-                                {loading ? "Booking..." : "✓ Confirm Booking"}
-                            </button>
-                        )}
-                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading || !selectedDate || !selectedTime || !selectedInstructor || !pickupAddress}
+                        className="w-full rounded-2xl bg-secondary py-4 text-base font-black text-white shadow-xl transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {loading ? "Booking..." : "Confirm Booking"}
+                    </button>
                 </form>
             </div>
         </Layout>
+    );
+}
+
+function StepCard({ number, title, active, children }) {
+    return (
+        <section className={`rounded-[1.5rem] bg-white p-5 shadow ${active ? "border border-slate-100" : "opacity-60"}`}>
+            <h2 className="mb-4 flex items-center gap-3 text-base font-black text-slate-900">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm text-white">{number}</span>
+                {title}
+            </h2>
+            {children}
+        </section>
     );
 }

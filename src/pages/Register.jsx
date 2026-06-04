@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import BrandMark from "../components/BrandMark";
 import { signUpStudent } from "../services/authService";
 
 export default function Register() {
@@ -47,16 +48,17 @@ export default function Register() {
 
     return (
         <Layout showPublicNav title="Register" contentClassName="flex-1 overflow-y-auto">
-            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-primary/10 to-muted">
+            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-[#061943] via-primary/10 to-muted">
             <div className="max-w-2xl mx-auto px-4 py-8">
-                <div className="text-center mb-8">
-                    <p className="text-sm font-bold uppercase tracking-[0.22em] text-secondary">Start training</p>
-                    <h1 className="mt-3 text-4xl font-black text-primary">Create Your NAMU Account</h1>
-                    <p className="mt-3 text-gray-600">Choose your package now, then book lessons after your account is ready.</p>
+                <div className="mb-8 flex flex-col items-center text-center">
+                    <BrandMark light />
+                    <p className="mt-5 text-sm font-bold uppercase tracking-[0.22em] text-gold">Start training</p>
+                    <h1 className="mt-3 text-4xl font-black text-white">Create Your NAMU Account</h1>
+                    <p className="mt-3 text-blue-100">Choose your package now, then book lessons after your account is ready.</p>
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
+                <div className="bg-white rounded-[2rem] shadow-2xl p-6 md:p-8 mb-8">
                     <h2 className="text-3xl font-bold text-primary text-center mb-2">Create Your Account</h2>
                     <p className="text-center text-gray-600 mb-8">Join our female-led driving academy and start your journey to confident driving</p>
 
@@ -65,14 +67,14 @@ export default function Register() {
                             <input
                                 required
                                 placeholder="Full name"
-                                className="border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
+                                className="border border-gray-200 rounded-2xl px-4 py-4 focus:outline-none focus:border-primary transition"
                                 value={form.fullName}
                                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                             />
                             <input
                                 required
                                 placeholder="Phone number"
-                                className="border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
+                                className="border border-gray-200 rounded-2xl px-4 py-4 focus:outline-none focus:border-primary transition"
                                 value={form.phone}
                                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                             />
@@ -82,7 +84,7 @@ export default function Register() {
                             required
                             type="email"
                             placeholder="Email address"
-                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
+                            className="w-full border border-gray-200 rounded-2xl px-4 py-4 focus:outline-none focus:border-primary transition"
                             value={form.email}
                             onChange={(e) => setForm({ ...form, email: e.target.value })}
                         />
@@ -90,7 +92,7 @@ export default function Register() {
                             required
                             type="password"
                             placeholder="Password (min 6 characters)"
-                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition"
+                            className="w-full border border-gray-200 rounded-2xl px-4 py-4 focus:outline-none focus:border-primary transition"
                             value={form.password}
                             onChange={(e) => setForm({ ...form, password: e.target.value })}
                         />
@@ -104,7 +106,7 @@ export default function Register() {
                                         key={pkg.value}
                                         type="button"
                                         onClick={() => setForm({ ...form, trainingPackage: pkg.value })}
-                                        className={`p-4 rounded-xl border-2 transition text-left ${
+                                        className={`p-4 rounded-2xl border transition text-left ${
                                             form.trainingPackage === pkg.value
                                                 ? "border-secondary bg-red-50 ring-2 ring-secondary/50"
                                                 : "border-gray-200 bg-white hover:border-secondary"
@@ -131,7 +133,7 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-secondary to-red-600 text-white rounded-xl py-4 font-bold text-lg hover:shadow-xl transition disabled:opacity-60 transform hover:scale-105"
+                            className="w-full bg-secondary text-white rounded-2xl py-4 font-bold text-lg hover:shadow-xl transition disabled:opacity-60 transform hover:scale-[1.01]"
                         >
                             {loading ? "Creating Account..." : "Create Account & Start Learning"}
                         </button>
