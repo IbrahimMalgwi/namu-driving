@@ -33,14 +33,14 @@ export default function Progress() {
     }
 
     return (
-        <Layout showBottomNav={true} title="My Progress" contentClassName="flex-1 overflow-y-auto bg-slate-100">
+        <Layout showBottomNav={true} title="My Progress" contentClassName="flex-1 overflow-y-auto bg-gradient-to-br from-sky-50 via-white to-amber-50">
             <div className="mx-auto max-w-4xl md:px-4 md:py-6">
-                <div className="bg-primary px-5 py-5 text-white shadow-lg md:rounded-t-[2rem]">
+                <div className="bg-gradient-to-r from-primary via-sky to-success px-5 py-5 text-white shadow-xl md:rounded-t-[2rem]">
                     <h1 className="text-center text-xl font-black">My Progress</h1>
                     <p className="mt-1 text-center text-sm text-blue-100">View your instructor-updated performance</p>
                 </div>
 
-                <div className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white md:p-6 md:shadow-xl">
+                <div className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white/90 md:p-6 md:shadow-xl md:ring-1 md:ring-sky-100">
                     {loading ? (
                         <div className="rounded-[1.5rem] bg-white p-8 text-center text-slate-500 shadow">Loading your progress...</div>
                     ) : (

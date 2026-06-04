@@ -131,13 +131,13 @@ export default function Catalog() {
             showBottomNav={!!profile}
             showPublicNav={!profile}
             navRole={navRole}
-            contentClassName="flex-1 overflow-y-auto bg-slate-50"
+            contentClassName="flex-1 overflow-y-auto bg-gradient-to-br from-sky-50 via-white to-amber-50"
         >
             <div className="relative overflow-hidden">
                 <div className="absolute -left-28 top-16 h-64 w-64 rounded-full bg-secondary/10 blur-3xl" />
                 <div className="absolute -right-28 top-80 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
 
-                <section className="relative bg-gradient-to-br from-primary via-blue-900 to-slate-950 text-white">
+                <section className="relative bg-gradient-to-br from-primary via-sky to-secondary text-white">
                     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.2fr_0.8fr] md:items-center lg:py-20">
                         <div>
                             <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-blue-50 shadow-sm backdrop-blur">
@@ -283,7 +283,7 @@ export default function Catalog() {
                     )}
 
                     {!isStudent && (
-                        <div className="mt-10 overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-2xl">
+                        <div className="mt-10 overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-sky to-secondary text-white shadow-2xl">
                             <div className="grid gap-0 md:grid-cols-[1.2fr_0.8fr]">
                                 <div className="p-8 md:p-10">
                                     <p className="text-sm font-bold uppercase tracking-[0.22em] text-red-200">Still comparing?</p>

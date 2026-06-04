@@ -48,7 +48,7 @@ export default function Register() {
 
     return (
         <Layout showPublicNav title="Register" contentClassName="flex-1 overflow-y-auto">
-            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-[#061943] via-primary/10 to-muted">
+            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-br from-primary via-sky-100 to-amber-50">
             <div className="max-w-2xl mx-auto px-4 py-8">
                 <div className="mb-8 flex flex-col items-center text-center">
                     <BrandMark light />
@@ -58,7 +58,7 @@ export default function Register() {
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-[2rem] shadow-2xl p-6 md:p-8 mb-8">
+                <div className="bg-white/95 rounded-[2rem] shadow-2xl p-6 md:p-8 mb-8 ring-1 ring-white/70">
                     <h2 className="text-3xl font-bold text-primary text-center mb-2">Create Your Account</h2>
                     <p className="text-center text-gray-600 mb-8">Join our female-led driving academy and start your journey to confident driving</p>
 

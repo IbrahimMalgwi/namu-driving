@@ -1,4 +1,4 @@
-// src/pages/Dashboard.jsx - Enhanced Instructor/Owner Dashboard
+// src/pages/Dashboard.jsx - Instructor/Owner Dashboard
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { supabase } from "../lib/supabase";
@@ -18,6 +18,14 @@ import {
     setStudentSkillProgress,
     SKILL_EMOJIS,
 } from "../services/progressService";
+
+const dashboardTabs = [
+    { id: "schedule", label: "Schedule", icon: "📅", color: "from-sky to-primary" },
+    { id: "maps", label: "Pick-up", icon: "🗺️", color: "from-emerald-400 to-success" },
+    { id: "progress", label: "Progress", icon: "📊", color: "from-gold to-secondary" },
+    { id: "learning", label: "Learning", icon: "📚", color: "from-lilac to-primary" },
+    { id: "documents", label: "Documents", icon: "📄", color: "from-secondary to-orange-500" },
+];
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("schedule");
@@ -46,11 +54,9 @@ export default function Dashboard() {
     async function loadData() {
         setLoading(true);
         try {
-            // Load ALL bookings for admin/instructor
             const bookingsData = await getAllBookings();
             setBookings(bookingsData || []);
 
-            // Load students and join profile details manually to avoid depending on DB relationship names.
             const { data: studentsData } = await supabase
                 .from("students")
                 .select("id, user_id, training_package");
@@ -83,7 +89,6 @@ export default function Dashboard() {
             const progressData = await getProgressForStudents(studentIds);
             setProgressByStudent(progressData);
 
-            // Load documents
             const { data: docsData } = await supabase
                 .from("student_documents")
                 .select("*")
@@ -110,8 +115,6 @@ export default function Dashboard() {
         setLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-
-            // Upload to storage
             const fileName = `${Date.now()}-${uploadedFile.name}`;
             const { data, error } = await supabase.storage
                 .from("student_documents")
@@ -119,7 +122,6 @@ export default function Dashboard() {
 
             if (error) throw error;
 
-            // Create document record
             const { error: docError } = await supabase
                 .from("student_documents")
                 .insert({
@@ -158,13 +160,7 @@ export default function Dashboard() {
             });
 
             setMessage("Learning content added successfully!");
-            setLearningForm({
-                type: "lesson",
-                title: "",
-                body: "",
-                packageType: "all",
-                studentId: "",
-            });
+            setLearningForm({ type: "lesson", title: "", body: "", packageType: "all", studentId: "" });
             setLearningFile(null);
             setTimeout(() => setMessage(""), 3000);
             loadData();
@@ -221,424 +217,308 @@ export default function Dashboard() {
         }
     }
 
-    return (
-        <Layout showBottomNav={true} navRole="staff">
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-primary to-blue-900 text-white rounded-2xl p-6 shadow-lg">
-                    <h1 className="text-3xl font-bold mb-1">Instructor Dashboard</h1>
-                    <p className="text-blue-100">Manage bookings, students, and documents</p>
-                </div>
+    const pendingBookings = bookings.filter((booking) => booking.status === "pending").length;
+    const confirmedBookings = bookings.filter((booking) => booking.status === "confirmed").length;
+    const activeTabConfig = dashboardTabs.find((tab) => tab.id === activeTab) || dashboardTabs[0];
 
-                {/* Message Alert */}
+    return (
+        <Layout showBottomNav={true} navRole="staff" title="Instructor Dashboard" contentClassName="flex-1 overflow-y-auto bg-gradient-to-br from-sky-50 via-white to-amber-50">
+            <div className="mx-auto max-w-7xl space-y-6 px-4 py-6">
+                <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-sky to-secondary p-6 text-white shadow-2xl md:p-8">
+                    <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/20 blur-2xl" />
+                    <div className="absolute -bottom-20 left-10 h-56 w-56 rounded-full bg-sunshine/30 blur-3xl" />
+                    <div className="relative grid gap-6 md:grid-cols-[1.1fr_0.9fr] md:items-end">
+                        <div>
+                            <p className="text-sm font-black uppercase tracking-[0.24em] text-sunshine">Instructor workspace</p>
+                            <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Manage every lesson beautifully.</h1>
+                            <p className="mt-3 max-w-2xl text-blue-50">Review bookings, update student performance, publish learning content, and manage documents from one consistent dashboard.</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            <StatCard label="Students" value={allStudents.length} icon="🎓" />
+                            <StatCard label="Pending" value={pendingBookings} icon="⏳" />
+                            <StatCard label="Confirmed" value={confirmedBookings} icon="✅" />
+                        </div>
+                    </div>
+                </section>
+
                 {message && (
-                    <div className={`p-4 rounded-xl ${message.includes("successfully") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    <div className={`rounded-2xl border p-4 font-bold shadow-sm ${message.includes("successfully") ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}>
                         {message}
                     </div>
                 )}
 
-                {/* Tab Navigation */}
-                <div className="flex space-x-3 overflow-x-auto pb-2">
-                    {[
-                        { id: "schedule", label: "📅 Schedule", icon: "📅" },
-                        { id: "maps", label: "🗺️ Pick-up Locations", icon: "🗺️" },
-                        { id: "progress", label: "📊 Student Progress", icon: "📊" },
-                        { id: "learning", label: "📚 Learning Content", icon: "📚" },
-                        { id: "documents", label: "📄 Documents", icon: "📄" }
-                    ].map(tab => (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    {dashboardTabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition ${
+                            className={`rounded-[1.35rem] p-4 text-left shadow-lg transition hover:-translate-y-1 ${
                                 activeTab === tab.id
-                                    ? "bg-secondary text-white shadow-lg"
-                                    : "bg-white text-gray-700 border border-gray-200 hover:border-secondary"
+                                    ? `bg-gradient-to-br ${tab.color} text-white`
+                                    : "bg-white text-slate-700 hover:bg-sky-50"
                             }`}
                         >
-                            {tab.label}
+                            <span className="text-3xl">{tab.icon}</span>
+                            <p className="mt-3 font-black">{tab.label}</p>
                         </button>
                     ))}
                 </div>
 
-                {/* Content Sections */}
-                {activeTab === "schedule" && (
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-primary">📅 Lesson Schedule</h2>
-
-                        {loading ? (
-                            <p className="text-center text-gray-500 py-8">Loading bookings...</p>
-                        ) : bookings.length === 0 ? (
-                            <div className="bg-blue-50 border border-primary/30 rounded-xl p-6 text-center">
-                                <p className="text-gray-600">No bookings yet</p>
-                            </div>
-                        ) : (
-                            bookings.map(booking => (
-                                <div
-                                    key={booking.id}
-                                    className="bg-white border-l-4 border-secondary rounded-lg p-5 shadow hover:shadow-lg transition"
-                                >
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h3 className="font-bold text-lg text-primary">
-                                                {booking.student?.full_name || "Unknown Student"}
-                                            </h3>
-                                            <p className="text-gray-600 text-sm">📞 {booking.student?.phone}</p>
-                                        </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                            booking.status === "confirmed" ? "bg-green-100 text-green-800" :
-                                            booking.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                                            "bg-gray-100 text-gray-800"
-                                        }`}>
-                                            {booking.status.toUpperCase()}
-                                        </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                                        <div>
-                                            <p className="text-gray-500">📅 Date</p>
-                                            <p className="font-semibold">{new Date(booking.booking_date).toLocaleDateString()}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-500">⏰ Time</p>
-                                            <p className="font-semibold">{booking.start_time}</p>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <p className="text-gray-500">📍 Pickup Location</p>
-                                            <p className="font-semibold">{booking.pickup_address}</p>
-                                        </div>
-                                    </div>
-
-                                    {booking.status === "pending" && (
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleUpdateBookingStatus(booking.id, "confirmed")}
-                                                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold transition"
-                                            >
-                                                ✓ Confirm
-                                            </button>
-                                            <button
-                                                onClick={() => handleUpdateBookingStatus(booking.id, "cancelled")}
-                                                className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg font-semibold transition"
-                                            >
-                                                ✕ Cancel
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                )}
-
-                {activeTab === "maps" && (
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-primary">🗺️ Special Training Pick-up Locations</h2>
-
-                        {students.length === 0 ? (
-                            <div className="bg-blue-50 border border-primary/30 rounded-xl p-6 text-center">
-                                <p className="text-gray-600">No special training students at the moment</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {students.map(student => (
-                                    <div key={student.id} className="bg-white rounded-xl p-5 shadow hover:shadow-lg transition">
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <h3 className="font-bold text-lg">{student.full_name}</h3>
-                                                <p className="text-gray-600 text-sm">📞 {student.phone}</p>
-                                            </div>
-                                            <span className="bg-secondary/20 text-secondary px-3 py-1 rounded-full text-xs font-bold">
-                                                Special Training
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Map Placeholder */}
-                        <PickupMap students={students} bookings={bookings} />
-                    </div>
-                )}
-
-                {activeTab === "progress" && (
-                    <div className="space-y-6">
+                <section className="rounded-[2rem] border border-white bg-white/85 p-5 shadow-xl backdrop-blur md:p-6">
+                    <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                         <div>
-                            <h2 className="text-2xl font-bold text-primary">📊 Student Progress</h2>
-                            <p className="text-gray-600 text-sm mt-1">
-                                Update each student's driving skills after lessons. Students can view this performance checklist but cannot edit it.
-                            </p>
+                            <p className="text-sm font-black uppercase tracking-[0.22em] text-secondary">{activeTabConfig.label}</p>
+                            <h2 className="mt-1 text-3xl font-black text-slate-950">{activeTabConfig.icon} {activeTabConfig.label}</h2>
                         </div>
-
-                        {loading ? (
-                            <p className="text-center text-gray-500 py-8">Loading student progress...</p>
-                        ) : allStudents.length === 0 ? (
-                            <div className="bg-blue-50 border border-primary/30 rounded-xl p-6 text-center">
-                                <p className="text-gray-600">No students available yet.</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                                {allStudents.map((student) => {
-                                    const progressItems = buildProgressChecklist(progressByStudent[student.id]);
-                                    const percent = getProgressPercent(progressItems);
-                                    const completedCount = progressItems.filter((item) => item.is_completed).length;
-
-                                    return (
-                                        <div key={student.id} className="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
-                                            <div className="bg-gradient-to-r from-primary to-blue-900 text-white p-5">
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <div>
-                                                        <h3 className="text-xl font-bold">{student.full_name}</h3>
-                                                        <p className="text-sm text-blue-100 mt-1">📞 {student.phone || "No phone number"}</p>
-                                                        <p className="text-xs text-blue-100 mt-2">
-                                                            Package: {student.training_package?.replaceAll("_", " ") || "Not selected"}
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="text-3xl font-black">{percent}%</p>
-                                                        <p className="text-xs text-blue-100">{completedCount}/{progressItems.length} complete</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="mt-4 h-3 rounded-full bg-white/20 overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full bg-secondary transition-all"
-                                                        style={{ width: `${percent}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="p-5 space-y-3">
-                                                {progressItems.map((item) => (
-                                                    <button
-                                                        key={item.skill_name}
-                                                        type="button"
-                                                        onClick={() => handleProgressToggle(student, item)}
-                                                        className={`w-full rounded-xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
-                                                            item.is_completed
-                                                                ? "border-green-200 bg-green-50"
-                                                                : "border-gray-200 bg-white hover:border-secondary"
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-center justify-between gap-3">
-                                                            <div className="flex items-center gap-3">
-                                                                <span className="text-3xl">{SKILL_EMOJIS[item.skill_name] || "🎯"}</span>
-                                                                <div>
-                                                                    <p className="font-bold text-gray-800">{item.skill_name}</p>
-                                                                    <p className={`text-xs font-semibold ${
-                                                                        item.is_completed ? "text-green-700" : "text-gray-500"
-                                                                    }`}>
-                                                                        {item.is_completed ? "Completed" : "Not completed"}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <span className={`flex h-8 w-8 items-center justify-center rounded-full text-lg font-black ${
-                                                                item.is_completed
-                                                                    ? "bg-green-500 text-white"
-                                                                    : "bg-gray-100 text-gray-400"
-                                                            }`}>
-                                                                {item.is_completed ? "✓" : "○"}
-                                                            </span>
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                        {loading && <span className="rounded-full bg-sky-50 px-4 py-2 text-sm font-bold text-primary">Loading...</span>}
                     </div>
-                )}
 
-                {activeTab === "learning" && (
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="text-2xl font-bold text-primary">📚 Learning Content</h2>
-                            <p className="text-gray-600 text-sm mt-1">
-                                Add lessons, road signs, driving tips, and car maintenance content for all students, a package, or one student.
-                            </p>
-                        </div>
-
-                        <form onSubmit={handleCreateLearningContent} className="bg-white rounded-2xl shadow p-6 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Content Type</label>
-                                    <select
-                                        value={learningForm.type}
-                                        onChange={(e) => setLearningForm({ ...learningForm, type: e.target.value })}
-                                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
-                                    >
-                                        {contentTypes.map((type) => (
-                                            <option key={type.value} value={type.value}>
-                                                {type.icon} {type.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Target Package</label>
-                                    <select
-                                        value={learningForm.packageType}
-                                        onChange={(e) => setLearningForm({ ...learningForm, packageType: e.target.value })}
-                                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
-                                    >
-                                        {packageOptions.map((pkg) => (
-                                            <option key={pkg.value} value={pkg.value}>
-                                                {pkg.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Specific Student (optional)</label>
-                                <select
-                                    value={learningForm.studentId}
-                                    onChange={(e) => setLearningForm({ ...learningForm, studentId: e.target.value })}
-                                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
-                                >
-                                    <option value="">All matching students</option>
-                                    {allStudents.map((student) => (
-                                        <option key={student.id} value={student.id}>
-                                            {student.full_name} ({student.training_package?.replaceAll("_", " ") || "no package"})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <input
-                                required
-                                placeholder="Title"
-                                value={learningForm.title}
-                                onChange={(e) => setLearningForm({ ...learningForm, title: e.target.value })}
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
-                            />
-
-                            <textarea
-                                required
-                                placeholder="Write the lesson, tip, sign meaning, or maintenance guidance..."
-                                value={learningForm.body}
-                                onChange={(e) => setLearningForm({ ...learningForm, body: e.target.value })}
-                                rows={5}
-                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary"
-                            />
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Upload Image/File (optional)</label>
-                                <input
-                                    type="file"
-                                    onChange={(e) => setLearningFile(e.target.files?.[0] || null)}
-                                    accept=".pdf,.jpg,.jpeg,.png,.webp"
-                                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3"
-                                />
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Useful for road signs, maintenance photos, or lesson documents.
-                                </p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-secondary hover:bg-red-700 text-white py-3 rounded-xl font-bold transition disabled:opacity-50"
-                            >
-                                {loading ? "Saving..." : "Add Learning Content"}
-                            </button>
-                        </form>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {learningGroups.map((group) => (
-                                <div key={group.value} className="bg-white rounded-2xl shadow p-5">
-                                    <h3 className="font-bold text-lg text-primary mb-3">
-                                        {group.icon} {group.label}
-                                    </h3>
-                                    <div className="space-y-3">
-                                        {group.items.length === 0 ? (
-                                            <p className="text-gray-500 text-sm">No content yet.</p>
-                                        ) : (
-                                            group.items.slice(0, 5).map((item) => (
-                                                <div key={item.id} className="border border-gray-100 rounded-xl p-3">
-                                                    <div className="flex items-start justify-between gap-3">
-                                                        <p className="font-bold text-gray-800">{item.title}</p>
-                                                        <span className={`text-xs font-bold rounded-full px-2 py-1 ${
-                                                            item.is_fixed ? "bg-blue-50 text-primary" : "bg-green-50 text-success"
-                                                        }`}>
-                                                            {item.is_fixed ? "Fixed" : "Added"}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">{item.body}</p>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "documents" && (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-primary">📄 Student Documents</h2>
-
-                        {/* Upload Section */}
-                        <div className="bg-gradient-to-br from-blue-50 to-primary/10 border-2 border-dashed border-primary/30 rounded-xl p-6">
-                            <h3 className="font-bold text-lg mb-4">📤 Upload Documentation</h3>
-                            <form onSubmit={handleFileUpload} className="space-y-4">
-                                <input
-                                    type="file"
-                                    onChange={(e) => setUploadedFile(e.target.files?.[0])}
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    className="w-full border-2 border-primary/30 rounded-lg p-3 focus:outline-none focus:border-primary"
-                                />
-                                <p className="text-xs text-gray-600">
-                                    ✓ Accepted: PDF, JPG, PNG (Max 5MB)
-                                </p>
-                                <button
-                                    type="submit"
-                                    disabled={loading || !uploadedFile}
-                                    className="w-full bg-primary hover:bg-blue-900 text-white py-3 rounded-lg font-bold transition disabled:opacity-50"
-                                >
-                                    {loading ? "Uploading..." : "Upload Document"}
-                                </button>
-                            </form>
-                        </div>
-
-                        {/* Documents List */}
-                        <div>
-                            <h3 className="font-bold text-lg mb-4">📚 Uploaded Documents</h3>
-                            {documents.length === 0 ? (
-                                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center text-gray-600">
-                                    No documents uploaded yet
-                                </div>
+                    {activeTab === "schedule" && (
+                        <div className="space-y-4">
+                            {bookings.length === 0 ? (
+                                <EmptyState text="No bookings yet" />
                             ) : (
-                                <div className="space-y-3">
-                                    {documents.map(doc => (
-                                        <div key={doc.id} className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-lg transition">
-                                            <div className="flex items-center space-x-3">
-                                                <span className="text-2xl">
-                                                    {doc.file_name.endsWith(".pdf") ? "📄" : "🖼️"}
-                                                </span>
+                                <div className="grid gap-4 lg:grid-cols-2">
+                                    {bookings.map((booking) => (
+                                        <article key={booking.id} className="overflow-hidden rounded-[1.5rem] border border-slate-100 bg-gradient-to-br from-white to-sky-50 shadow-sm">
+                                            <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
                                                 <div>
-                                                    <p className="font-semibold text-gray-800">{doc.file_name}</p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {new Date(doc.created_at).toLocaleDateString()}
-                                                    </p>
+                                                    <h3 className="text-xl font-black text-primary">{booking.student?.full_name || "Unknown Student"}</h3>
+                                                    <p className="text-sm font-semibold text-slate-500">📞 {booking.student?.phone || "No phone"}</p>
+                                                </div>
+                                                <StatusBadge status={booking.status} />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 p-5 text-sm">
+                                                <InfoTile label="Date" value={new Date(booking.booking_date).toLocaleDateString()} icon="📅" />
+                                                <InfoTile label="Time" value={booking.start_time} icon="⏰" />
+                                                <div className="col-span-2">
+                                                    <InfoTile label="Pickup Location" value={booking.pickup_address || "Not provided"} icon="📍" />
                                                 </div>
                                             </div>
-                                            <button className="text-primary hover:text-blue-900 font-bold text-sm">
-                                                View
-                                            </button>
-                                        </div>
+                                            {booking.status === "pending" && (
+                                                <div className="grid grid-cols-2 gap-3 px-5 pb-5">
+                                                    <button onClick={() => handleUpdateBookingStatus(booking.id, "confirmed")} className="rounded-2xl bg-success py-3 font-black text-white shadow hover:bg-green-600">Confirm</button>
+                                                    <button onClick={() => handleUpdateBookingStatus(booking.id, "cancelled")} className="rounded-2xl bg-slate-200 py-3 font-black text-slate-700 hover:bg-slate-300">Cancel</button>
+                                                </div>
+                                            )}
+                                        </article>
                                     ))}
                                 </div>
                             )}
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {activeTab === "maps" && (
+                        <div className="space-y-5">
+                            {students.length === 0 ? (
+                                <EmptyState text="No special training students at the moment" />
+                            ) : (
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    {students.map((student) => (
+                                        <div key={student.id} className="rounded-[1.5rem] bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm ring-1 ring-amber-100">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div>
+                                                    <h3 className="font-black text-slate-900">{student.full_name}</h3>
+                                                    <p className="text-sm text-slate-500">📞 {student.phone || "No phone"}</p>
+                                                </div>
+                                                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-black text-white">Special</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="overflow-hidden rounded-[1.5rem] shadow-lg ring-1 ring-slate-100">
+                                <PickupMap students={students} bookings={bookings} />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "progress" && (
+                        <div className="space-y-5">
+                            <p className="text-sm text-slate-600">Update each student's driving skills after lessons. Students can view this checklist but cannot edit it.</p>
+                            {allStudents.length === 0 ? (
+                                <EmptyState text="No students available yet." />
+                            ) : (
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                                    {allStudents.map((student) => {
+                                        const progressItems = buildProgressChecklist(progressByStudent[student.id]);
+                                        const percent = getProgressPercent(progressItems);
+                                        const completedCount = progressItems.filter((item) => item.is_completed).length;
+
+                                        return (
+                                            <div key={student.id} className="overflow-hidden rounded-[1.75rem] bg-white shadow-lg ring-1 ring-slate-100">
+                                                <div className="bg-gradient-to-r from-primary via-sky to-success p-5 text-white">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div>
+                                                            <h3 className="text-xl font-black">{student.full_name}</h3>
+                                                            <p className="text-sm text-white/85">📞 {student.phone || "No phone number"}</p>
+                                                            <p className="mt-2 text-xs font-bold text-white/85">{student.training_package?.replaceAll("_", " ") || "No package"}</p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-4xl font-black">{percent}%</p>
+                                                            <p className="text-xs text-white/85">{completedCount}/{progressItems.length} complete</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/25">
+                                                        <div className="h-full rounded-full bg-sunshine" style={{ width: `${percent}%` }} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3 p-5">
+                                                    {progressItems.map((item) => (
+                                                        <button
+                                                            key={item.skill_name}
+                                                            type="button"
+                                                            onClick={() => handleProgressToggle(student, item)}
+                                                            className={`w-full rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
+                                                                item.is_completed ? "border-green-200 bg-green-50" : "border-slate-200 bg-white hover:border-sky"
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-3">
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-2xl">{SKILL_EMOJIS[item.skill_name] || "🎯"}</span>
+                                                                    <div>
+                                                                        <p className="font-black text-slate-800">{item.skill_name}</p>
+                                                                        <p className={`text-xs font-bold ${item.is_completed ? "text-green-700" : "text-slate-500"}`}>{item.is_completed ? "Completed" : "Not completed"}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-lg font-black ${item.is_completed ? "bg-success text-white" : "bg-slate-100 text-slate-400"}`}>{item.is_completed ? "✓" : "○"}</span>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === "learning" && (
+                        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+                            <form onSubmit={handleCreateLearningContent} className="space-y-4 rounded-[1.75rem] bg-gradient-to-br from-sky-50 to-white p-5 shadow-sm ring-1 ring-sky-100">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <FormSelect label="Content Type" value={learningForm.type} onChange={(value) => setLearningForm({ ...learningForm, type: value })}>
+                                        {contentTypes.map((type) => <option key={type.value} value={type.value}>{type.icon} {type.label}</option>)}
+                                    </FormSelect>
+                                    <FormSelect label="Target Package" value={learningForm.packageType} onChange={(value) => setLearningForm({ ...learningForm, packageType: value })}>
+                                        {packageOptions.map((pkg) => <option key={pkg.value} value={pkg.value}>{pkg.label}</option>)}
+                                    </FormSelect>
+                                </div>
+                                <FormSelect label="Specific Student (optional)" value={learningForm.studentId} onChange={(value) => setLearningForm({ ...learningForm, studentId: value })}>
+                                    <option value="">All matching students</option>
+                                    {allStudents.map((student) => <option key={student.id} value={student.id}>{student.full_name} ({student.training_package?.replaceAll("_", " ") || "no package"})</option>)}
+                                </FormSelect>
+                                <input required placeholder="Title" value={learningForm.title} onChange={(e) => setLearningForm({ ...learningForm, title: e.target.value })} className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-primary focus:outline-none" />
+                                <textarea required placeholder="Write the lesson, tip, sign meaning, or maintenance guidance..." value={learningForm.body} onChange={(e) => setLearningForm({ ...learningForm, body: e.target.value })} rows={5} className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-primary focus:outline-none" />
+                                <input type="file" onChange={(e) => setLearningFile(e.target.files?.[0] || null)} accept=".pdf,.jpg,.jpeg,.png,.webp" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3" />
+                                <button type="submit" disabled={loading} className="w-full rounded-2xl bg-gradient-to-r from-secondary to-orange-500 py-3 font-black text-white shadow-lg transition hover:shadow-xl disabled:opacity-50">{loading ? "Saving..." : "Add Learning Content"}</button>
+                            </form>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {learningGroups.map((group) => (
+                                    <div key={group.value} className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-slate-100">
+                                        <h3 className="mb-3 text-lg font-black text-primary">{group.icon} {group.label}</h3>
+                                        <div className="space-y-3">
+                                            {group.items.length === 0 ? <p className="text-sm text-slate-500">No content yet.</p> : group.items.slice(0, 5).map((item) => (
+                                                <div key={item.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <p className="font-black text-slate-800">{item.title}</p>
+                                                        <span className={`rounded-full px-2 py-1 text-xs font-black ${item.is_fixed ? "bg-blue-100 text-primary" : "bg-green-100 text-success"}`}>{item.is_fixed ? "Fixed" : "Added"}</span>
+                                                    </div>
+                                                    <p className="mt-1 line-clamp-2 text-sm text-slate-600">{item.body}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "documents" && (
+                        <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+                            <div className="rounded-[1.75rem] border-2 border-dashed border-sky bg-gradient-to-br from-sky-50 to-white p-6">
+                                <h3 className="mb-4 text-lg font-black text-primary">📤 Upload Documentation</h3>
+                                <form onSubmit={handleFileUpload} className="space-y-4">
+                                    <input type="file" onChange={(e) => setUploadedFile(e.target.files?.[0])} accept=".pdf,.jpg,.jpeg,.png" className="w-full rounded-2xl border border-slate-200 bg-white p-3" />
+                                    <p className="text-xs font-semibold text-slate-500">Accepted: PDF, JPG, PNG</p>
+                                    <button type="submit" disabled={loading || !uploadedFile} className="w-full rounded-2xl bg-primary py-3 font-black text-white shadow-lg transition hover:bg-blue-900 disabled:opacity-50">{loading ? "Uploading..." : "Upload Document"}</button>
+                                </form>
+                            </div>
+
+                            <div>
+                                {documents.length === 0 ? <EmptyState text="No documents uploaded yet" /> : (
+                                    <div className="space-y-3">
+                                        {documents.map((doc) => (
+                                            <div key={doc.id} className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:shadow-md">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary/10 text-2xl">{doc.file_name.endsWith(".pdf") ? "📄" : "🖼️"}</span>
+                                                    <div>
+                                                        <p className="font-black text-slate-800">{doc.file_name}</p>
+                                                        <p className="text-xs text-slate-500">{new Date(doc.created_at).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <button className="rounded-full bg-sky-50 px-4 py-2 text-sm font-black text-primary">View</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </section>
             </div>
         </Layout>
+    );
+}
+
+function StatCard({ label, value, icon }) {
+    return (
+        <div className="rounded-2xl bg-white/18 p-4 text-center shadow-lg ring-1 ring-white/25 backdrop-blur">
+            <p className="text-2xl">{icon}</p>
+            <p className="mt-1 text-3xl font-black">{value}</p>
+            <p className="text-xs font-bold text-white/85">{label}</p>
+        </div>
+    );
+}
+
+function StatusBadge({ status }) {
+    const styles = {
+        confirmed: "bg-green-100 text-green-800",
+        pending: "bg-amber-100 text-amber-800",
+        cancelled: "bg-red-100 text-red-800",
+    };
+
+    return <span className={`rounded-full px-3 py-1 text-xs font-black ${styles[status] || "bg-slate-100 text-slate-700"}`}>{status?.toUpperCase()}</span>;
+}
+
+function InfoTile({ label, value, icon }) {
+    return (
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-400">{icon} {label}</p>
+            <p className="mt-1 font-black text-slate-800">{value}</p>
+        </div>
+    );
+}
+
+function EmptyState({ text }) {
+    return (
+        <div className="rounded-[1.5rem] border border-dashed border-sky bg-sky-50 p-8 text-center text-slate-600">
+            <p className="text-4xl">✨</p>
+            <p className="mt-3 font-bold">{text}</p>
+        </div>
+    );
+}
+
+function FormSelect({ label, value, onChange, children }) {
+    return (
+        <label className="block">
+            <span className="mb-2 block text-sm font-black text-slate-700">{label}</span>
+            <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 focus:border-primary focus:outline-none">
+                {children}
+            </select>
+        </label>
     );
 }

@@ -53,9 +53,9 @@ export default function Layout({
         : "/";
 
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col">
+        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-amber-50 flex flex-col">
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-gradient-to-r from-[#061943] via-primary to-[#061943] text-white shadow-xl">
+            <div className="sticky top-0 z-40 border-b border-white/20 bg-gradient-to-r from-[#061943] via-primary to-secondary text-white shadow-xl">
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <button
@@ -66,7 +66,7 @@ export default function Layout({
                         </button>
 
                         {showBottomNav && (
-                            <div className="hidden items-center gap-2 overflow-x-auto pb-1 md:flex md:pb-0">
+                            <div className={`${navRole === "student" ? "hidden md:flex" : "flex"} items-center gap-2 overflow-x-auto pb-1 md:pb-0`}>
                                 {navItems.map((item) => {
                                     const isActive = location.pathname === item.path;
                                     return (
@@ -75,8 +75,8 @@ export default function Layout({
                                             onClick={() => navigate(item.path)}
                                             className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
                                                 isActive
-                                                    ? "bg-white text-secondary shadow"
-                                                    : "bg-white/10 text-white hover:bg-white/20"
+                                                    ? "bg-white text-primary shadow-lg"
+                                                    : "bg-white/15 text-white hover:bg-white/25"
                                             }`}
                                         >
                                             <span>{item.icon}</span>
@@ -86,7 +86,7 @@ export default function Layout({
                                 })}
                                 <button
                                     onClick={handleLogout}
-                                    className="whitespace-nowrap rounded-full bg-secondary px-4 py-2 text-sm font-semibold transition hover:bg-red-600"
+                                    className="whitespace-nowrap rounded-full bg-sunshine px-4 py-2 text-sm font-black text-slate-950 shadow transition hover:bg-gold"
                                 >
                                     Logout
                                 </button>
@@ -103,8 +103,8 @@ export default function Layout({
                                             onClick={() => navigate(item.path)}
                                             className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
                                                 isActive
-                                                    ? "bg-white text-secondary shadow"
-                                                    : "bg-white/10 text-white hover:bg-white/20"
+                                                    ? "bg-white text-primary shadow-lg"
+                                                    : "bg-white/15 text-white hover:bg-white/25"
                                             }`}
                                         >
                                             {item.label}
@@ -113,7 +113,7 @@ export default function Layout({
                                 })}
                                 <button
                                     onClick={() => navigate("/register")}
-                                    className="whitespace-nowrap rounded-full bg-secondary px-4 py-2 text-sm font-bold text-white shadow transition hover:bg-red-600"
+                                    className="whitespace-nowrap rounded-full bg-sunshine px-4 py-2 text-sm font-black text-slate-950 shadow transition hover:bg-gold"
                                 >
                                     Start Training
                                 </button>
@@ -127,7 +127,7 @@ export default function Layout({
             <div className={`${contentClassName} ${showBottomNav && navRole === "student" ? "pb-24 md:pb-4" : ""}`}>{children}</div>
 
             {showBottomNav && navRole === "student" && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-2 py-2 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
+                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/70 bg-white/90 px-2 py-2 shadow-[0_-10px_30px_rgba(13,71,161,0.18)] backdrop-blur md:hidden">
                     <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
                         {studentNavItems.map((item) => {
                             const isActive = location.pathname === item.path;
@@ -136,7 +136,7 @@ export default function Layout({
                                     key={item.path}
                                     onClick={() => navigate(item.path)}
                                     className={`rounded-2xl px-2 py-2 text-center text-[11px] font-bold transition ${
-                                        isActive ? "bg-primary text-white shadow" : "text-slate-500"
+                                        isActive ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg" : "text-slate-500 hover:bg-sky-50"
                                     }`}
                                 >
                                     <span className="block text-lg leading-none">{item.icon}</span>

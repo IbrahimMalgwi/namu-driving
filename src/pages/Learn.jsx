@@ -81,9 +81,9 @@ export default function Learn() {
     const activeGroup = groups.find((group) => group.value === activeType);
 
     return (
-        <Layout showBottomNav={true} title="Learn Driving" contentClassName="flex-1 overflow-y-auto bg-slate-100">
+        <Layout showBottomNav={true} title="Learn Driving" contentClassName="flex-1 overflow-y-auto bg-gradient-to-br from-sky-50 via-white to-amber-50">
             <div className="mx-auto max-w-5xl md:px-4 md:py-6">
-                <div className="bg-primary px-5 py-5 text-white shadow-lg md:rounded-t-[2rem]">
+                <div className="bg-gradient-to-r from-primary via-lilac to-secondary px-5 py-5 text-white shadow-xl md:rounded-t-[2rem]">
                     <h1 className="text-center text-xl font-black">Learn Driving</h1>
                     <p className="mt-1 text-center text-sm text-blue-100">Lessons, road signs, tips, and maintenance</p>
                 </div>
@@ -93,7 +93,7 @@ export default function Learn() {
                         Loading learning content...
                     </div>
                 ) : (
-                    <div className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white md:p-6 md:shadow-xl">
+                    <div className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white/90 md:p-6 md:shadow-xl md:ring-1 md:ring-sky-100">
                         <div className="flex items-center justify-between">
                             <h2 className="font-black text-slate-900">Categories</h2>
                             <span className="text-sm font-black text-secondary">View all</span>

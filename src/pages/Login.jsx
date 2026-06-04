@@ -29,7 +29,7 @@ export default function Login() {
 
     return (
         <Layout showPublicNav title="Login" contentClassName="flex-1 overflow-y-auto">
-            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-[#061943] via-primary/10 to-muted flex items-center justify-center px-4 py-10">
+            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-br from-primary via-sky-100 to-amber-50 flex items-center justify-center px-4 py-10">
             <div className="w-full max-w-md">
                 {/* Header */}
                 <div className="mb-8 flex justify-center">
@@ -37,7 +37,7 @@ export default function Login() {
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-[2rem] shadow-2xl p-8">
+                <div className="bg-white/95 rounded-[2rem] shadow-2xl p-8 ring-1 ring-white/70">
                     <h2 className="text-2xl font-bold text-primary text-center mb-2">Welcome Back!</h2>
                     <p className="text-center text-gray-600 text-sm mb-8">Sign in to your account</p>
 

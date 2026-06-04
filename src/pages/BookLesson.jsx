@@ -124,14 +124,14 @@ export default function BookLesson() {
     const selectedInstructorData = instructors.find((inst) => inst.id === selectedInstructor);
 
     return (
-        <Layout showBottomNav={true} title="Book Lesson" contentClassName="flex-1 overflow-y-auto bg-slate-100">
+        <Layout showBottomNav={true} title="Book Lesson" contentClassName="flex-1 overflow-y-auto bg-gradient-to-br from-sky-50 via-white to-amber-50">
             <div className="mx-auto max-w-3xl md:px-4 md:py-6">
-                <div className="bg-primary px-5 py-5 text-white shadow-lg md:rounded-t-[2rem]">
+                <div className="bg-gradient-to-r from-primary via-sky to-secondary px-5 py-5 text-white shadow-xl md:rounded-t-[2rem]">
                     <h1 className="text-center text-xl font-black">Book Lesson</h1>
                     <p className="mt-1 text-center text-sm text-blue-100">Reserve a lesson in four quick steps</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white md:p-6 md:shadow-xl">
+                <form onSubmit={handleSubmit} className="space-y-5 px-4 py-5 md:rounded-b-[2rem] md:bg-white/90 md:p-6 md:shadow-xl md:ring-1 md:ring-sky-100">
                     <StepCard number="1" title="Select Date" active>
                         <input
                             type="date"

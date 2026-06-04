@@ -22,10 +22,11 @@ export default function LandingPage() {
 
     return (
         <Layout showPublicNav title="Home" contentClassName="flex-1 overflow-y-auto">
-            <div className="min-h-screen bg-white">
-                <section className="relative overflow-hidden bg-gradient-to-br from-[#041638] via-primary to-[#051d4c] text-white">
+            <div className="min-h-screen bg-gradient-to-br from-white via-sky-50 to-amber-50">
+                <section className="relative overflow-hidden bg-gradient-to-br from-primary via-sky to-secondary text-white">
                     <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent" />
-                    <div className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
+                    <div className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-white/25 blur-3xl" />
+                    <div className="absolute -left-24 bottom-10 h-72 w-72 rounded-full bg-sunshine/30 blur-3xl" />
                     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-[1fr_0.85fr] md:items-center lg:py-20">
                         <div className="relative z-10">
                             <BrandMark light />
@@ -89,7 +90,7 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section className="bg-slate-50 px-4 py-12">
+                <section className="bg-gradient-to-br from-sky-50 via-white to-amber-50 px-4 py-12">
                     <div className="mx-auto max-w-6xl">
                         <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                             <div>

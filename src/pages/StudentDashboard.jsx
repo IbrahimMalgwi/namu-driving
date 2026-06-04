@@ -58,10 +58,12 @@ export default function StudentDashboard() {
     }, []);
 
     return (
-        <Layout showBottomNav={true} contentClassName="flex-1 overflow-y-auto bg-slate-100">
+        <Layout showBottomNav={true} contentClassName="flex-1 overflow-y-auto bg-gradient-to-br from-sky-50 via-white to-amber-50">
             <div className="mx-auto max-w-5xl md:px-4 md:py-6">
-                <section className="rounded-b-[2rem] bg-gradient-to-b from-[#061943] to-primary px-5 pb-8 pt-5 text-white shadow-xl md:rounded-[2rem]">
-                    <div className="flex items-start justify-between gap-4">
+                <section className="relative overflow-hidden rounded-b-[2rem] bg-gradient-to-br from-primary via-sky to-secondary px-5 pb-8 pt-5 text-white shadow-2xl md:rounded-[2rem]">
+                    <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-white/20 blur-3xl" />
+                    <div className="absolute -bottom-16 left-8 h-44 w-44 rounded-full bg-sunshine/30 blur-3xl" />
+                    <div className="relative flex items-start justify-between gap-4">
                         <div>
                             <BrandMark compact light />
                             <p className="mt-8 text-blue-100">Welcome back,</p>
@@ -74,7 +76,7 @@ export default function StudentDashboard() {
                 </section>
 
                 <div className="space-y-5 px-4 py-5 md:px-0">
-                    <div className="-mt-12 rounded-[2rem] bg-white p-5 shadow-2xl md:mt-0">
+                    <div className="-mt-12 rounded-[2rem] bg-white p-5 shadow-2xl ring-1 ring-sky-100 md:mt-0">
                         <div className="flex items-start justify-between gap-3">
                             <div>
                                 <p className="text-sm font-black text-slate-500">Next Lesson</p>
@@ -110,7 +112,7 @@ export default function StudentDashboard() {
                             <button
                                 key={action.title}
                                 onClick={() => navigate(action.path)}
-                                className="rounded-[1.5rem] bg-white p-5 text-center shadow transition hover:-translate-y-1 hover:shadow-xl"
+                                className="rounded-[1.5rem] bg-white p-5 text-center shadow-lg ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-xl"
                             >
                                 <span className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl ${action.color} text-3xl text-white shadow`}>
                                     {action.icon}
@@ -121,7 +123,7 @@ export default function StudentDashboard() {
                     </div>
 
                     {studentPackage && (
-                        <div className="rounded-[1.5rem] bg-white p-5 shadow">
+                        <div className="rounded-[1.5rem] bg-gradient-to-br from-white to-amber-50 p-5 shadow ring-1 ring-amber-100">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <p className="text-sm font-black text-secondary">Selected Package</p>
@@ -133,7 +135,7 @@ export default function StudentDashboard() {
                         </div>
                     )}
 
-                    <div className="rounded-[1.5rem] bg-white p-5 shadow">
+                    <div className="rounded-[1.5rem] bg-gradient-to-br from-white to-sky-50 p-5 shadow ring-1 ring-sky-100">
                         <div className="flex items-center justify-between">
                             <h3 className="font-black text-slate-900">Quick Tips</h3>
                             <button onClick={() => navigate("/learn")} className="text-sm font-black text-secondary">View all</button>
