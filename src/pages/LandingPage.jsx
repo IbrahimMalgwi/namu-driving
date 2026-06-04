@@ -1,6 +1,7 @@
 // src/pages/LandingPage.jsx
 
 import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
 
 export default function LandingPage() {
     const navigate = useNavigate();
@@ -68,7 +69,8 @@ export default function LandingPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-primary via-blue-50 to-muted">
+        <Layout showPublicNav title="Home" contentClassName="flex-1 overflow-y-auto">
+            <div className="min-h-screen bg-gradient-to-b from-primary via-blue-50 to-muted">
             {/* Header / Hero Section */}
             <div className="bg-gradient-to-r from-primary to-blue-900 text-white py-16 px-4 text-center relative overflow-hidden">
                 <div className="max-w-4xl mx-auto relative z-10">
@@ -199,6 +201,7 @@ export default function LandingPage() {
                     </p>
                 </div>
             </div>
-        </div>
+            </div>
+        </Layout>
     );
 }

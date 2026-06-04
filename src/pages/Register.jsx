@@ -1,6 +1,7 @@
 // src/pages/Register.jsx - Enhanced with Better Package Display
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
 import { signUpStudent } from "../services/authService";
 
 export default function Register() {
@@ -45,14 +46,15 @@ export default function Register() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-primary/10 to-muted">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-blue-900 text-white py-8 text-center">
-                <h1 className="text-4xl font-bold">NAMU DRIVING SCHOOL</h1>
-                <p className="text-blue-100 mt-2">Giving you confidence on the wheel</p>
-            </div>
-
+        <Layout showPublicNav title="Register" contentClassName="flex-1 overflow-y-auto">
+            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-primary/10 to-muted">
             <div className="max-w-2xl mx-auto px-4 py-8">
+                <div className="text-center mb-8">
+                    <p className="text-sm font-bold uppercase tracking-[0.22em] text-secondary">Start training</p>
+                    <h1 className="mt-3 text-4xl font-black text-primary">Create Your NAMU Account</h1>
+                    <p className="mt-3 text-gray-600">Choose your package now, then book lessons after your account is ready.</p>
+                </div>
+
                 {/* Form Card */}
                 <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
                     <h2 className="text-3xl font-bold text-primary text-center mb-2">Create Your Account</h2>
@@ -166,6 +168,7 @@ export default function Register() {
                     By signing up, you agree to our Terms & Conditions and Privacy Policy
                 </p>
             </div>
-        </div>
+            </div>
+        </Layout>
     );
 }

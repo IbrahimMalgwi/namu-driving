@@ -1,6 +1,7 @@
 // src/pages/Login.jsx - Enhanced Design
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
 import { signIn, getCurrentUserProfile } from "../services/authService";
 
 export default function Login() {
@@ -26,7 +27,8 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-primary/10 to-muted flex items-center justify-center px-4">
+        <Layout showPublicNav title="Login" contentClassName="flex-1 overflow-y-auto">
+            <div className="min-h-[calc(100vh-84px)] bg-gradient-to-b from-primary/10 to-muted flex items-center justify-center px-4 py-10">
             <div className="w-full max-w-md">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -118,6 +120,7 @@ export default function Login() {
                     </p>
                 </div>
             </div>
-        </div>
+            </div>
+        </Layout>
     );
 }
