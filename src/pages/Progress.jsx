@@ -1,23 +1,12 @@
 // src/pages/Progress.jsx - Enhanced with Confidence Meter
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/Layout";
-import { getMyProgress, updateProgress } from "../services/progressService";
-
-const REQUIRED_SKILLS = [
-    "Traffic Signs",
-    "Parallel Parking",
-    "Reverse Entry",
-    "Highway Driving",
-    "Defensive Driving"
-];
-
-const SKILL_EMOJIS = {
-    "Traffic Signs": "🛑",
-    "Parallel Parking": "🅿️",
-    "Reverse Entry": "⬅️",
-    "Highway Driving": "🛣️",
-    "Defensive Driving": "🚗"
-};
+import {
+    buildProgressChecklist,
+    getMyProgress,
+    getProgressPercent,
+    SKILL_EMOJIS,
+} from "../services/progressService";
 
 export default function Progress() {
     const [items, setItems] = useState([]);
@@ -27,16 +16,7 @@ export default function Progress() {
         async function load() {
             try {
                 const data = await getMyProgress();
-                // Ensure all required skills are present
-                const skillMap = new Map(data.map(item => [item.skill_name, item]));
-                const completeItems = REQUIRED_SKILLS.map(skillName =>
-                    skillMap.get(skillName) || {
-                        id: `temp-${skillName}`,
-                        skill_name: skillName,
-                        is_completed: false
-                    }
-                );
-                setItems(completeItems);
+                setItems(buildProgressChecklist(data));
             } finally {
                 setLoading(false);
             }
@@ -44,23 +24,8 @@ export default function Progress() {
         load();
     }, []);
 
-    async function toggle(item) {
-        const newCompleted = !item.is_completed;
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_completed: newCompleted } : i));
-        try {
-            if (item.id && !item.id.startsWith('temp-')) {
-                await updateProgress(item.id, newCompleted);
-            }
-        } catch (err) {
-            // revert on error
-            setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_completed: !newCompleted } : i));
-        }
-    }
-
     const percent = useMemo(() => {
-        if (!items.length) return 0;
-        const completed = items.filter(i => i.is_completed).length;
-        return Math.round((completed / items.length) * 100);
+        return getProgressPercent(items);
     }, [items]);
 
     const getConfidenceLevel = (percent) => {
@@ -139,7 +104,15 @@ export default function Progress() {
             </div>
 
             {/* Skills Checklist */}
-            <h3 className="font-bold text-lg text-primary mb-4">✅ Skills Checklist</h3>
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h3 className="font-bold text-lg text-primary">✅ Performance Checklist</h3>
+                    <p className="text-sm text-gray-600">Your instructor updates these skills after your lessons.</p>
+                </div>
+                <span className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-bold text-primary">
+                    View only
+                </span>
+            </div>
             <div className="space-y-3 mb-8">
                 {loading ? (
                     <p className="text-center text-gray-500 py-4">Loading your progress...</p>
@@ -147,23 +120,27 @@ export default function Progress() {
                     <p className="text-center text-gray-500 py-4">No skills tracked yet. Your instructor will add them soon!</p>
                 ) : (
                     items.map(item => (
-                        <button
+                        <div
                             key={item.id}
-                            onClick={() => toggle(item)}
-                            className={`w-full text-left p-4 rounded-xl shadow-md transition transform hover:scale-105 flex items-center justify-between ${
+                            className={`w-full text-left p-4 rounded-xl shadow-md flex items-center justify-between ${
                                 item.is_completed 
                                     ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white" 
-                                    : "bg-white hover:bg-gray-50 text-gray-800 border border-gray-200"
+                                    : "bg-white text-gray-800 border border-gray-200"
                             }`}
                         >
                             <div className="flex items-center space-x-3">
                                 <span className="text-3xl">{SKILL_EMOJIS[item.skill_name] || "🎯"}</span>
-                                <span className="font-semibold">{item.skill_name}</span>
+                                <div>
+                                    <span className="font-semibold">{item.skill_name}</span>
+                                    <p className={item.is_completed ? "text-xs text-white/80" : "text-xs text-gray-500"}>
+                                        {item.is_completed ? "Completed by instructor" : "Awaiting instructor approval"}
+                                    </p>
+                                </div>
                             </div>
                             <span className={`text-2xl ${item.is_completed ? "text-white" : "text-gray-400"}`}>
                                 {item.is_completed ? "✓" : "○"}
                             </span>
-                        </button>
+                        </div>
                     ))
                 )}
             </div>
@@ -186,7 +163,7 @@ export default function Progress() {
 
             <div className="mt-6 bg-green-50 border-l-4 border-success rounded-lg p-4">
                 <p className="text-sm text-gray-700">
-                    <span className="font-semibold">💡 Tip:</span> Click on each skill to mark them as complete as you master them. Your confidence level updates in real-time!
+                    <span className="font-semibold">💡 Tip:</span> Review your performance after each lesson. If something looks outdated, ask your instructor to update your checklist.
                 </p>
             </div>
         </Layout>

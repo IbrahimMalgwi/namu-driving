@@ -3,6 +3,62 @@ import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { getLearningContentForStudent, groupLearningContent } from "../services/learnService";
 
+function RoadSignVisual({ item }) {
+    const visual = item.sign_visual;
+
+    if (!visual) {
+        return (
+            <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-red-50">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full border-8 border-secondary bg-white text-4xl">
+                    🛑
+                </div>
+            </div>
+        );
+    }
+
+    if (visual.shape === "octagon") {
+        return (
+            <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-red-50">
+                <div
+                    className="flex h-28 w-28 items-center justify-center bg-secondary text-2xl font-black text-white shadow-lg"
+                    style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
+                >
+                    {visual.label}
+                </div>
+            </div>
+        );
+    }
+
+    if (visual.shape === "no_parking") {
+        return (
+            <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-blue-50">
+                <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-8 border-secondary bg-white text-5xl font-black text-primary shadow-lg">
+                    {visual.label}
+                    <span className="absolute h-2 w-28 rotate-45 rounded-full bg-secondary" />
+                </div>
+            </div>
+        );
+    }
+
+    if (visual.shape === "warning") {
+        return (
+            <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-yellow-50">
+                <div className="flex h-28 w-28 rotate-45 items-center justify-center rounded-2xl border-8 border-yellow-500 bg-yellow-200 shadow-lg">
+                    <span className="-rotate-45 text-4xl">{visual.label}</span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-slate-50">
+            <div className="flex h-28 w-28 items-center justify-center rounded-full border-8 border-secondary bg-white text-4xl font-black text-slate-900 shadow-lg">
+                {visual.label}
+            </div>
+        </div>
+    );
+}
+
 export default function Learn() {
     const [groups, setGroups] = useState([]);
     const [activeType, setActiveType] = useState("lesson");
@@ -101,6 +157,15 @@ export default function Learn() {
                                                 )
                                             )}
 
+                                            {item.type === "road_sign" && !item.file_url && (
+                                                <RoadSignVisual item={item} />
+                                            )}
+
+                                            {item.type === "road_sign" && (
+                                                <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-secondary">
+                                                    Sign meaning
+                                                </p>
+                                            )}
                                             <p className="text-gray-700 leading-relaxed">{item.body}</p>
 
                                             {item.package_type && item.package_type !== "all" && (

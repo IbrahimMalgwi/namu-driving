@@ -1,6 +1,40 @@
 // src/services/progressService.js
 import { supabase } from "../lib/supabase";
 
+export const REQUIRED_SKILLS = [
+    "Traffic Signs",
+    "Parallel Parking",
+    "Reverse Entry",
+    "Highway Driving",
+    "Defensive Driving"
+];
+
+export const SKILL_EMOJIS = {
+    "Traffic Signs": "🛑",
+    "Parallel Parking": "🅿️",
+    "Reverse Entry": "⬅️",
+    "Highway Driving": "🛣️",
+    "Defensive Driving": "🚗"
+};
+
+export function buildProgressChecklist(progressItems = []) {
+    const skillMap = new Map(progressItems.map((item) => [item.skill_name, item]));
+
+    return REQUIRED_SKILLS.map((skillName) => (
+        skillMap.get(skillName) || {
+            id: `temp-${skillName}`,
+            skill_name: skillName,
+            is_completed: false
+        }
+    ));
+}
+
+export function getProgressPercent(progressItems = []) {
+    if (!progressItems.length) return 0;
+    const completed = progressItems.filter((item) => item.is_completed).length;
+    return Math.round((completed / progressItems.length) * 100);
+}
+
 export async function getMyStudentRecord() {
     const {
         data: { user },
@@ -39,7 +73,49 @@ export async function getMyProgress() {
     return data || [];
 }
 
-export async function updateProgress(progressId, isCompleted) {
+export async function getProgressForStudents(studentIds = []) {
+    if (!studentIds.length) return {};
+
+    const { data, error } = await supabase
+        .from("progress")
+        .select("*")
+        .in("student_id", studentIds)
+        .order("skill_name", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).reduce((acc, item) => {
+        if (!acc[item.student_id]) acc[item.student_id] = [];
+        acc[item.student_id].push(item);
+        return acc;
+    }, {});
+}
+
+export async function setStudentSkillProgress({ studentId, skillName, progressId, isCompleted }) {
+    const now = new Date().toISOString();
+
+    if (progressId && !progressId.startsWith("temp-")) {
+        return updateProgress(progressId, isCompleted);
+    }
+
+    const { data, error } = await supabase
+        .from("progress")
+        .insert({
+            id: crypto.randomUUID(),
+            student_id: studentId,
+            skill_name: skillName,
+            is_completed: isCompleted,
+            completed_at: isCompleted ? now : null,
+            updated_at: now,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+async function updateProgress(progressId, isCompleted) {
     const { data, error } = await supabase
         .from("progress")
         .update({

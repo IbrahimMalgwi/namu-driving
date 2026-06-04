@@ -11,6 +11,13 @@ import {
     groupLearningContent,
     packageOptions,
 } from "../services/learnService";
+import {
+    buildProgressChecklist,
+    getProgressForStudents,
+    getProgressPercent,
+    setStudentSkillProgress,
+    SKILL_EMOJIS,
+} from "../services/progressService";
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("schedule");
@@ -19,6 +26,7 @@ export default function Dashboard() {
     const [allStudents, setAllStudents] = useState([]);
     const [documents, setDocuments] = useState([]);
     const [learningGroups, setLearningGroups] = useState([]);
+    const [progressByStudent, setProgressByStudent] = useState({});
     const [loading, setLoading] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
     const [learningFile, setLearningFile] = useState(null);
@@ -70,6 +78,10 @@ export default function Dashboard() {
 
             setAllStudents(hydratedStudents);
             setStudents(hydratedStudents.filter((student) => student.training_package === "special"));
+
+            const studentIds = hydratedStudents.map((student) => student.id);
+            const progressData = await getProgressForStudents(studentIds);
+            setProgressByStudent(progressData);
 
             // Load documents
             const { data: docsData } = await supabase
@@ -174,6 +186,41 @@ export default function Dashboard() {
         }
     }
 
+    async function handleProgressToggle(student, item) {
+        const newCompleted = !item.is_completed;
+
+        setProgressByStudent((prev) => ({
+            ...prev,
+            [student.id]: buildProgressChecklist(prev[student.id]).map((progressItem) =>
+                progressItem.skill_name === item.skill_name
+                    ? { ...progressItem, is_completed: newCompleted }
+                    : progressItem
+            ),
+        }));
+
+        try {
+            const savedItem = await setStudentSkillProgress({
+                studentId: student.id,
+                skillName: item.skill_name,
+                progressId: item.id,
+                isCompleted: newCompleted,
+            });
+
+            setProgressByStudent((prev) => ({
+                ...prev,
+                [student.id]: buildProgressChecklist(prev[student.id]).map((progressItem) =>
+                    progressItem.skill_name === savedItem.skill_name ? savedItem : progressItem
+                ),
+            }));
+
+            setMessage(`${student.full_name}'s progress updated successfully!`);
+            setTimeout(() => setMessage(""), 3000);
+        } catch (err) {
+            setMessage(`Error: ${err.message || "Unable to update progress"}`);
+            loadData();
+        }
+    }
+
     return (
         <Layout showBottomNav={true} navRole="staff">
             <div className="space-y-6">
@@ -195,6 +242,7 @@ export default function Dashboard() {
                     {[
                         { id: "schedule", label: "📅 Schedule", icon: "📅" },
                         { id: "maps", label: "🗺️ Pick-up Locations", icon: "🗺️" },
+                        { id: "progress", label: "📊 Student Progress", icon: "📊" },
                         { id: "learning", label: "📚 Learning Content", icon: "📚" },
                         { id: "documents", label: "📄 Documents", icon: "📄" }
                     ].map(tab => (
@@ -310,6 +358,96 @@ export default function Dashboard() {
 
                         {/* Map Placeholder */}
                         <PickupMap students={students} bookings={bookings} />
+                    </div>
+                )}
+
+                {activeTab === "progress" && (
+                    <div className="space-y-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-primary">📊 Student Progress</h2>
+                            <p className="text-gray-600 text-sm mt-1">
+                                Update each student's driving skills after lessons. Students can view this performance checklist but cannot edit it.
+                            </p>
+                        </div>
+
+                        {loading ? (
+                            <p className="text-center text-gray-500 py-8">Loading student progress...</p>
+                        ) : allStudents.length === 0 ? (
+                            <div className="bg-blue-50 border border-primary/30 rounded-xl p-6 text-center">
+                                <p className="text-gray-600">No students available yet.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                                {allStudents.map((student) => {
+                                    const progressItems = buildProgressChecklist(progressByStudent[student.id]);
+                                    const percent = getProgressPercent(progressItems);
+                                    const completedCount = progressItems.filter((item) => item.is_completed).length;
+
+                                    return (
+                                        <div key={student.id} className="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
+                                            <div className="bg-gradient-to-r from-primary to-blue-900 text-white p-5">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <h3 className="text-xl font-bold">{student.full_name}</h3>
+                                                        <p className="text-sm text-blue-100 mt-1">📞 {student.phone || "No phone number"}</p>
+                                                        <p className="text-xs text-blue-100 mt-2">
+                                                            Package: {student.training_package?.replaceAll("_", " ") || "Not selected"}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-3xl font-black">{percent}%</p>
+                                                        <p className="text-xs text-blue-100">{completedCount}/{progressItems.length} complete</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4 h-3 rounded-full bg-white/20 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-secondary transition-all"
+                                                        style={{ width: `${percent}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="p-5 space-y-3">
+                                                {progressItems.map((item) => (
+                                                    <button
+                                                        key={item.skill_name}
+                                                        type="button"
+                                                        onClick={() => handleProgressToggle(student, item)}
+                                                        className={`w-full rounded-xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
+                                                            item.is_completed
+                                                                ? "border-green-200 bg-green-50"
+                                                                : "border-gray-200 bg-white hover:border-secondary"
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-3xl">{SKILL_EMOJIS[item.skill_name] || "🎯"}</span>
+                                                                <div>
+                                                                    <p className="font-bold text-gray-800">{item.skill_name}</p>
+                                                                    <p className={`text-xs font-semibold ${
+                                                                        item.is_completed ? "text-green-700" : "text-gray-500"
+                                                                    }`}>
+                                                                        {item.is_completed ? "Completed" : "Not completed"}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <span className={`flex h-8 w-8 items-center justify-center rounded-full text-lg font-black ${
+                                                                item.is_completed
+                                                                    ? "bg-green-500 text-white"
+                                                                    : "bg-gray-100 text-gray-400"
+                                                            }`}>
+                                                                {item.is_completed ? "✓" : "○"}
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 )}
 
